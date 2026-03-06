@@ -758,6 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Dev Logs Logic
+    const logTimeFilter = document.getElementById('log-time-filter');
     const logTypeFilter = document.getElementById('log-type-filter');
     const logSearchInput = document.getElementById('log-search-input');
     const refreshLogsBtn = document.getElementById('refresh-logs-btn');
@@ -769,7 +770,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fetchLogs = async () => {
         logViewer.innerHTML = '<div class="text-center text-gray-500 py-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading logs...</div>';
         try {
-            const res = await fetch('/api/logs');
+            const timeVal = logTimeFilter ? logTimeFilter.value : 'all';
+            const res = await fetch(`/api/logs?hours=${timeVal}`);
             const data = await res.json();
             rawLogs = data.logs || [];
             renderLogs();
@@ -779,8 +781,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderLogs = () => {
-        const type = logTypeFilter.value;
-        const query = logSearchInput.value.toLowerCase();
+        const type = logTypeFilter ? logTypeFilter.value : 'ALL';
+        const query = logSearchInput ? logSearchInput.value.toLowerCase() : '';
         
         let filtered = rawLogs.filter(line => {
             if (type !== 'ALL' && !line.includes(`[${type}]`)) return false;
@@ -788,7 +790,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
-        logCount.textContent = `${filtered.length} lines`;
+        if (logCount) logCount.textContent = `${filtered.length} lines`;
+        if (!logViewer) return;
+        
         logViewer.innerHTML = '';
         
         if (filtered.length === 0) {
@@ -811,6 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logViewer.scrollTop = logViewer.scrollHeight;
     };
 
+    if (logTimeFilter) logTimeFilter.addEventListener('change', fetchLogs);
     if (logTypeFilter) logTypeFilter.addEventListener('change', renderLogs);
     if (logSearchInput) logSearchInput.addEventListener('input', renderLogs);
     if (refreshLogsBtn) refreshLogsBtn.addEventListener('click', fetchLogs);

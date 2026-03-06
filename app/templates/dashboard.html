@@ -162,7 +162,7 @@
                             <a href="#" id="toggle-ai-prompt-btn" class="text-sm text-blue-400 hover:underline"><i class="fa-solid fa-pen-to-square mr-1"></i>Customize AI Prompt</a>
                             <div id="ai-prompt-container" class="hidden mt-4">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Context Prompt</label>
-                                <textarea id="ai-prompt-input" rows="5" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-gray-800 focus:border-emerald-500 text-sm leading-relaxed">{{ user.ai_context_prompt }}</textarea>
+                                <textarea id="ai-prompt-input" rows="5" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-gray-800 focus:border-emerald-500 text-sm leading-relaxed">{{ user.ai_context_prompt if user.ai_context_prompt else default_ai_prompt }}</textarea>
                                 <div class="flex justify-end mt-2">
                                     <button type="button" id="reset-ai-prompt-btn" class="text-xs bg-[#2B2D31] hover:bg-[#3F4147] text-gray-300 py-1.5 px-3 rounded border border-gray-700 transition-colors">
                                         <i class="fa-solid fa-rotate-left mr-1"></i> Reset to Default

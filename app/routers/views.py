@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import os
 
 from ..database import get_db
-from ..models import User
+from ..models import User, DEFAULT_AI_PROMPT
 from ..auth_deps import get_current_user_from_cookie
 
 router = APIRouter(tags=["views"])
@@ -24,7 +24,7 @@ def get_dashboard(request: Request, user: User = Depends(get_current_user_from_c
     # before the database session is closed by the dependency.
     _ = user.platforms
 
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user, "default_ai_prompt": DEFAULT_AI_PROMPT})
 
 @router.get("/login", response_class=HTMLResponse)
 def get_login(request: Request):

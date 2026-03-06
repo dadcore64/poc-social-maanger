@@ -14,7 +14,7 @@ LOG_TIME_PATTERN = re.compile(r"^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}),\d{3}\]
 
 @router.get("")
 def get_dev_logs(
-    hours: Optional[str] = Query("all"), 
+    hours: Optional[str] = Query("1"), 
     user: User = Depends(get_current_user_from_cookie)
 ):
     if not user:
@@ -46,7 +46,7 @@ def get_dev_logs(
     except ValueError:
         return {"logs": all_lines[-2000:]}
         
-    cutoff_time = datetime.utcnow() - timedelta(hours=hours_int)
+    cutoff_time = datetime.now() - timedelta(hours=hours_int)
     
     filtered_lines = []
     last_valid_time = None

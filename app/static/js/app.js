@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fetchLogs = async () => {
         logViewer.innerHTML = '<div class="text-center text-gray-500 py-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading logs...</div>';
         try {
-            const timeVal = logTimeFilter ? logTimeFilter.value : 'all';
+            const timeVal = logTimeFilter ? logTimeFilter.value : '1';
             const res = await fetch(`/api/logs?hours=${timeVal}`);
             const data = await res.json();
             rawLogs = data.logs || [];

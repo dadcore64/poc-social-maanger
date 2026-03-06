@@ -394,6 +394,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
+            settingsModal.classList.add('hidden');
+        }
+    });
+
+
     // Tab Switching Logic
     settingsTabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -449,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (val === currentUsername) {
                 isSUsernameValid = true;
                 sUsernameMsg.classList.add('hidden');
-                sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-gray-800 focus:ring-2 focus:ring-emerald-500';
+                sUsername.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-gray-800 focus:border-emerald-500';
                 checkSettingsFormValidity();
                 return;
             }
@@ -457,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isSUsernameValid = false;
                 sUsernameMsg.textContent = '3-20 characters, alphanumeric and underscores only';
                 sUsernameMsg.className = 'text-xs mt-1 text-red-500';
-                sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                sUsername.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-red-500 focus:border-red-500';
                 sUsernameMsg.classList.remove('hidden');
                 checkSettingsFormValidity();
                 return;
@@ -472,11 +479,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.available) {
                         isSUsernameValid = true;
                         sUsernameMsg.innerHTML = '<i class="fa-solid fa-check text-green-500 mr-1"></i><span class="text-green-500">Username is available!</span>';
-                        sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
+                        sUsername.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-green-500 focus:border-green-500';
                     } else {
                         isSUsernameValid = false;
                         sUsernameMsg.innerHTML = `<i class="fa-solid fa-xmark text-red-500 mr-1"></i><span class="text-red-500">Taken.</span>`;
-                        sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                        sUsername.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-red-500 focus:border-red-500';
                     }
                     checkSettingsFormValidity();
                 } catch (err) {
@@ -528,12 +535,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     sConfirmIcon.className = 'fa-solid fa-circle-check text-green-500 mr-1';
                     sConfirmMsg.textContent = 'Passwords match';
                     sConfirmMsg.className = 'text-green-500';
-                    sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
+                    sConfirm.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-green-500 focus:border-green-500';
                 } else {
                     sConfirmIcon.className = 'fa-solid fa-circle-xmark text-red-500 mr-1';
                     sConfirmMsg.textContent = 'Passwords do not match';
                     sConfirmMsg.className = 'text-red-400';
-                    sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                    sConfirm.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-red-500 focus:border-red-500';
                 }
             } else {
                 isSConfirmValid = false;
@@ -551,12 +558,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 sConfirmIcon.className = 'fa-solid fa-circle-check text-green-500 mr-1';
                 sConfirmMsg.textContent = 'Passwords match';
                 sConfirmMsg.className = 'text-green-500';
-                sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
+                sConfirm.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-green-500 focus:border-green-500';
             } else {
                 sConfirmIcon.className = 'fa-solid fa-circle-xmark text-red-500 mr-1';
                 sConfirmMsg.textContent = 'Passwords do not match';
                 sConfirmMsg.className = 'text-red-400';
-                sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                sConfirm.className = 'w-full bg-[#1E1F22] text-white p-3 rounded outline-none border border-red-500 focus:border-red-500';
             }
             checkSettingsFormValidity();
         });
@@ -609,17 +616,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteAccountModal = document.getElementById('delete-account-modal');
     const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    
+    let deleteCountdownInterval;
 
     if (deleteAccountBtn) {
         deleteAccountBtn.addEventListener('click', (e) => {
             e.preventDefault();
             deleteAccountModal.classList.remove('hidden');
             deleteAccountModal.classList.add('flex');
+            
+            // Start countdown
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            let counter = 5;
+            confirmDeleteBtn.textContent = `Delete Account (${counter})`;
+            
+            clearInterval(deleteCountdownInterval);
+            deleteCountdownInterval = setInterval(() => {
+                counter--;
+                if (counter > 0) {
+                    confirmDeleteBtn.textContent = `Delete Account (${counter})`;
+                } else {
+                    clearInterval(deleteCountdownInterval);
+                    confirmDeleteBtn.textContent = 'Delete Account';
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }, 1000);
         });
     }
 
     if (cancelDeleteBtn) {
         cancelDeleteBtn.addEventListener('click', () => {
+            clearInterval(deleteCountdownInterval);
             deleteAccountModal.classList.add('hidden');
             deleteAccountModal.classList.remove('flex');
         });

@@ -19,17 +19,22 @@ def summarize_and_prioritize_messages(db: Session, user_id: int):
     Finds unread messages without an AI summary for the given user,
     sends them to Gemini, and updates the database with the results.
     """
-    # Fetch API key
-    api_key = os.environ.get("GEMINI_API_KEY", "dummy_key_for_testing")
-    if api_key == "dummy_key_for_testing" and not os.environ.get("PYTEST_CURRENT_TEST"):
-        logger.warning("GEMINI_API_KEY not set. Skipping AI processing.")
-        return 0
-
     from ..models import PlatformConnection, User
+    from ..security import decrypt_token
     
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return 0
+
+    # Fetch API key
+    if not user.encrypted_ai_token and not os.environ.get("PYTEST_CURRENT_TEST"):
+        logger.warning(f"No AI token set for user {user.username}. Skipping AI processing.")
+        return 0
+
+    if user.encrypted_ai_token:
+        api_key = decrypt_token(user.encrypted_ai_token)
+    else:
+        api_key = "dummy_key_for_testing"
 
     # In a real app we'd filter by user's connections. For simplicity, grabbing all unread without summary.
     connections = db.query(PlatformConnection).filter(PlatformConnection.user_id == user_id).all()

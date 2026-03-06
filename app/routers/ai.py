@@ -5,17 +5,12 @@ from ..database import get_db
 from ..models import User
 from ..services.ai import summarize_and_prioritize_messages
 
+from ..auth_deps import get_current_user_from_cookie
+
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
 @router.post("/summarize")
-def trigger_summarization(db: Session = Depends(get_db)):
-    # In a real app we'd get the user_id from the token dependency. 
-    # For now, grabbing the demo admin user
-    user = db.query(User).filter(User.username == "discgolf_admin").first()
-    if not user:
-        # Fallback for testing
-        user = db.query(User).first()
-        
+def trigger_summarization(db: Session = Depends(get_db), user: User = Depends(get_current_user_from_cookie)):
     if not user:
         return {"status": "error", "detail": "No user found"}
         

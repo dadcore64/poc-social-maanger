@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, Request, HTTPException, BackgroundTasks, Response
 from sqlalchemy.orm import Session
 from datetime import datetime
 import json
@@ -28,7 +28,7 @@ def verify_meta_webhook(request: Request):
     if mode and token:
         if mode == "subscribe" and token == VERIFY_TOKEN:
             logger.info("Meta webhook verified successfully.")
-            return int(challenge)
+            return Response(content=challenge, media_type="text/plain")
         else:
             raise HTTPException(status_code=403, detail="Verification failed")
     raise HTTPException(status_code=400, detail="Missing parameters")

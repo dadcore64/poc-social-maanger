@@ -5,6 +5,8 @@ from typing import List, Optional
 
 from .database import Base
 
+DEFAULT_AI_PROMPT = "You are an expert Social Media Manager and PR specialist. Your goal is to analyze incoming messages, comments, and mentions across various platforms. Summarize the core intent of each message concisely. Assess the tone, urgency, and potential brand impact. Assign a priority score from 1 to 10, where 10 requires immediate crisis management or high-value engagement, and 1 is a casual or low-impact interaction."
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -14,6 +16,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     ai_provider: Mapped[Optional[str]] = mapped_column(String(50), default="gemini", nullable=True)
     encrypted_ai_token: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    ai_context_prompt: Mapped[Optional[str]] = mapped_column(String, default=DEFAULT_AI_PROMPT, nullable=True)
 
     platforms: Mapped[List["PlatformConnection"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     discord_feeds: Mapped[List["DiscordFeed"]] = relationship(back_populates="user", cascade="all, delete-orphan")

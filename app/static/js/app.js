@@ -689,6 +689,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiSubmitBtn = document.getElementById('ai-submit-btn');
     const aiStatusMessage = document.getElementById('ai-status-message');
     const aiSettingsForm = document.getElementById('ai-settings-form');
+    
+    const toggleAiPromptBtn = document.getElementById('toggle-ai-prompt-btn');
+    const aiPromptContainer = document.getElementById('ai-prompt-container');
+    const aiPromptInput = document.getElementById('ai-prompt-input');
+    const resetAiPromptBtn = document.getElementById('reset-ai-prompt-btn');
+
+    const DEFAULT_AI_PROMPT = "You are an expert Social Media Manager and PR specialist. Your goal is to analyze incoming messages, comments, and mentions across various platforms. Summarize the core intent of each message concisely. Assess the tone, urgency, and potential brand impact. Assign a priority score from 1 to 10, where 10 requires immediate crisis management or high-value engagement, and 1 is a casual or low-impact interaction.";
+
+    if (toggleAiPromptBtn) {
+        toggleAiPromptBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            aiPromptContainer.classList.toggle('hidden');
+        });
+    }
+
+    if (resetAiPromptBtn) {
+        resetAiPromptBtn.addEventListener('click', () => {
+            aiPromptInput.value = DEFAULT_AI_PROMPT;
+        });
+    }
 
     const updateAiInstructions = () => {
         const p = aiProviderSelect.value;
@@ -714,6 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const provider = aiProviderSelect.value;
             const token = aiTokenInput.value.trim();
+            const prompt = aiPromptInput ? aiPromptInput.value.trim() : DEFAULT_AI_PROMPT;
 
             if (!provider) return;
 
@@ -724,7 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const payload = {
                 ai_provider: provider,
-                ai_token: token || "UNCHANGED"
+                ai_token: token || "UNCHANGED",
+                ai_context_prompt: prompt
             };
 
             try {

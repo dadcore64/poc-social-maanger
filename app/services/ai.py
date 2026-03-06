@@ -25,8 +25,13 @@ def summarize_and_prioritize_messages(db: Session, user_id: int):
         logger.warning("GEMINI_API_KEY not set. Skipping AI processing.")
         return 0
 
+    from ..models import PlatformConnection, User
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return 0
+
     # In a real app we'd filter by user's connections. For simplicity, grabbing all unread without summary.
-    from ..models import PlatformConnection
     connections = db.query(PlatformConnection).filter(PlatformConnection.user_id == user_id).all()
     conn_ids = [c.id for c in connections]
     
@@ -46,18 +51,20 @@ def summarize_and_prioritize_messages(db: Session, user_id: int):
     processed_count = 0
 
     for msg in messages:
+        base_context = user.ai_context_prompt or "You are a social media manager assistant."
+
         prompt = f"""
-        You are a social media manager assistant.
+        {base_context}
+
         Please analyze this incoming message from a customer/follower:
         "{msg.content}"
 
         1. Provide a very brief summary (1 sentence max).
         2. Assign a priority score from 1 to 10 (10 being highly urgent like a sponsorship or angry customer, 1 being a simple emoji or low priority comment).
-        
+
         Respond with exactly this JSON format:
         {{"summary": "...", "priority_score": X}}
         """
-
         try:
             # If in test mode, mock the response
             if os.environ.get("PYTEST_CURRENT_TEST"):

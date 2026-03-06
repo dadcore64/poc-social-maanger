@@ -112,6 +112,7 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     ai_provider: Optional[str] = None
     ai_token: Optional[str] = None
+    ai_context_prompt: Optional[str] = None
 
 @router.put("/api/users/me")
 def update_user_settings(user_data: UserUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user_from_cookie)):
@@ -133,6 +134,9 @@ def update_user_settings(user_data: UserUpdate, db: Session = Depends(get_db), u
     if user_data.ai_token and user_data.ai_token != "UNCHANGED":
         from ..security import encrypt_token
         user.encrypted_ai_token = encrypt_token(user_data.ai_token)
+
+    if user_data.ai_context_prompt:
+        user.ai_context_prompt = user_data.ai_context_prompt
         
     db.commit()
     return {"status": "success"}

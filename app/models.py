@@ -61,6 +61,17 @@ class DiscordFeed(Base):
 
     user: Mapped["User"] = relationship(back_populates="discord_feeds")
 
+class AILog(Base):
+    __tablename__ = "ai_logs"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    overall_summary: Mapped[str] = mapped_column(String)
+    processed_count: Mapped[int] = mapped_column(Integer)
+    filter_criteria: Mapped[str] = mapped_column(String)
+
+    user: Mapped["User"] = relationship()
+
 class MuteRule(Base):
     __tablename__ = "mute_rules"
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

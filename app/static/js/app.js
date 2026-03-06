@@ -260,6 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarTabs = document.querySelectorAll('.sidebar-tab');
     const centerHeaderIcon = document.getElementById('center-header-icon');
     const centerHeaderText = document.getElementById('center-header-text');
+    const aiHistoryContainer = document.getElementById('ai-history-container');
+    const aiInsightsBanner = document.getElementById('ai-insights-banner');
 
     sidebarTabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -268,10 +270,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 t.classList.remove('bg-[#3F4147]', 'text-gray-200');
                 t.classList.add('text-gray-400');
             });
+            if (summarizeBtn) {
+                summarizeBtn.classList.remove('bg-[#3F4147]', 'text-amber-300');
+            }
             
             // Add active state to clicked
             tab.classList.add('bg-[#3F4147]', 'text-gray-200');
             tab.classList.remove('text-gray-400');
+
+            // Manage Views
+            if (aiHistoryContainer) aiHistoryContainer.classList.add('hidden');
+            if (messageContainer) messageContainer.classList.remove('hidden');
+            if (aiInsightsBanner) aiInsightsBanner.classList.remove('hidden');
 
             const filter = tab.dataset.filter;
             const iconClass = tab.dataset.icon;
@@ -285,6 +295,79 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchMessages(filter);
         });
     });
+
+    // AI History View Logic
+    if (summarizeBtn) {
+        summarizeBtn.addEventListener('click', async () => {
+            // Manage Active State
+            sidebarTabs.forEach(t => {
+                t.classList.remove('bg-[#3F4147]', 'text-gray-200');
+                t.classList.add('text-gray-400');
+            });
+            summarizeBtn.classList.add('bg-[#3F4147]', 'text-amber-300');
+
+            // Set Header
+            if (centerHeaderIcon && centerHeaderText) {
+                centerHeaderIcon.className = `fa-solid fa-sparkles text-amber-400 w-5 text-center mr-2`;
+                centerHeaderText.textContent = "AI Insight History";
+            }
+
+            // Manage Views
+            if (messageContainer) messageContainer.classList.add('hidden');
+            if (aiInsightsBanner) aiInsightsBanner.classList.add('hidden');
+            if (aiHistoryContainer) {
+                aiHistoryContainer.classList.remove('hidden');
+                aiHistoryContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2 text-amber-400"></i> Loading history...</div>';
+            }
+
+            try {
+                const response = await fetch('/api/ai/history');
+                const history = await response.json();
+
+                if (!response.ok) throw new Error("Failed to load");
+
+                if (history.length === 0) {
+                    aiHistoryContainer.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-gray-500 space-y-4">
+                            <i class="fa-solid fa-clock-rotate-left text-4xl"></i>
+                            <p>No AI Insights generated yet. Go to your messages and generate some!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                aiHistoryContainer.innerHTML = '<div class="space-y-4"></div>';
+                const wrapper = aiHistoryContainer.querySelector('.space-y-4');
+
+                history.forEach(log => {
+                    const d = new Date(log.timestamp);
+                    const dateStr = d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    const el = document.createElement('div');
+                    el.className = "bg-[#2B2D31] border border-gray-800 rounded p-4 group";
+                    el.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center text-amber-400 font-bold text-sm">
+                                <i class="fa-solid fa-sparkles mr-2"></i> Insight Report
+                            </div>
+                            <div class="text-xs text-gray-500">${dateStr}</div>
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed mb-3">
+                            ${log.overall_summary}
+                        </div>
+                        <div class="flex items-center text-xs text-gray-500 space-x-4 border-t border-gray-800 pt-3">
+                            <span><i class="fa-solid fa-layer-group mr-1"></i> ${log.processed_count} messages processed</span>
+                            <span><i class="fa-solid fa-filter mr-1"></i> ${log.filter_criteria}</span>
+                        </div>
+                    `;
+                    wrapper.appendChild(el);
+                });
+
+            } catch (e) {
+                aiHistoryContainer.innerHTML = '<div class="text-red-500 p-4">Failed to load AI history.</div>';
+            }
+        });
+    }
 
 // --- 3. REPLY LOGIC ---
     replyBtn.addEventListener('click', async () => {
@@ -337,7 +420,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('main-app').classList.add("blur-sm");
             
             try {
-                const response = await fetch('/api/ai/summarize', { method: 'POST' });
+                const params = new URLSearchParams({
+                    hours: timeFilter,
+                    platform: currentFilter,
+                    search: searchQuery
+                });
+                const response = await fetch(`/api/ai/summarize?${params.toString()}`, { method: 'POST' });
                 const result = await response.json();
                 if (result.status === 'success') {
                     console.log(`Summarized ${result.processed_count} messages`);

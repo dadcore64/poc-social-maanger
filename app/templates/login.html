@@ -438,7 +438,7 @@ resetPasswordInput.addEventListener('input', (e) => {
                         usernameMsg.classList.add('text-red-500');
                         
                         if (data.suggestions) {
-                            usernameSuggestions.innerHTML = 'Try: ' + data.suggestions.map(s => `<span class="bg-gray-700 px-2 py-1 rounded cursor-pointer hover:bg-gray-600 suggestion-badge">${s}</span>`).join('');
+                            usernameSuggestions.innerHTML = '<span class="text-gray-400 flex items-center">Try:</span>' + data.suggestions.map(s => `<span class="bg-gray-700 text-gray-200 px-2 py-1 rounded cursor-pointer hover:bg-gray-600 suggestion-badge">${s}</span>`).join('');
                             usernameSuggestions.classList.remove('hidden');
                             document.querySelectorAll('.suggestion-badge').forEach(badge => {
                                 badge.addEventListener('click', () => {

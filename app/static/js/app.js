@@ -25,7 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const replyInput = document.getElementById('reply-input');
     const replyBtn = document.getElementById('reply-submit-btn');
     const aiContextPanel = document.getElementById('ai-context-panel');
-    const summarizeBtn = document.getElementById('summarize-btn');
+    const summarizeBtn = document.getElementById('summarize-btn'); // Still exists in sidebar
+    const generateInsightsBtn = document.getElementById('generate-insights-btn'); // New banner button
+    const aiBannerText = document.getElementById('ai-banner-text');
 
     // --- Modals ---
     const addPlatformBtn = document.getElementById('add-platform-btn');
@@ -155,8 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             msgDiv.dataset.platform = msg.platform;
 
             let priorityBadge = '';
-            if (msg.ai_priority_score && msg.ai_priority_score >= 8) {
-                priorityBadge = `<span class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded ml-2 font-bold"><i class="fa-solid fa-fire text-[10px]"></i> HOT</span>`;
+            if (msg.ai_priority_score) {
+                priorityBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded ml-2 font-bold"><i class="fa-solid fa-sparkles text-[10px] mr-1"></i>${msg.ai_priority_score}</span>`;
             }
 
             let avatarHtml = msg.sender_avatar_url 
@@ -322,21 +324,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 4. AI SUMMARIZATION ---
-    if (summarizeBtn) {
-        summarizeBtn.addEventListener('click', async () => {
-            const originalIcon = summarizeBtn.innerHTML;
-            summarizeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    if (generateInsightsBtn) {
+        generateInsightsBtn.addEventListener('click', async () => {
+            const originalIcon = generateInsightsBtn.innerHTML;
+            
+            // Show main loading indicator
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingText.textContent = "AI is analyzing messages...";
+            loadingOverlay.classList.remove("hidden");
+            loadingOverlay.classList.add("flex");
+            document.getElementById('main-app').classList.add("blur-sm");
+            
             try {
                 const response = await fetch('/api/ai/summarize', { method: 'POST' });
                 const result = await response.json();
                 if (result.status === 'success') {
                     console.log(`Summarized ${result.processed_count} messages`);
+                    // Update AI Banner text to show overall insights or success state
+                    if (aiBannerText) {
+                        aiBannerText.textContent = `Insights generated! Processed ${result.processed_count} new messages. Review priority scores below.`;
+                    }
                     fetchMessages();
                 }
             } catch (e) {
                 console.error("Failed to run summarization", e);
+                if (aiBannerText) {
+                    aiBannerText.textContent = "Failed to generate insights. Check your AI provider settings.";
+                }
             } finally {
-                summarizeBtn.innerHTML = originalIcon;
+                loadingOverlay.classList.add("hidden");
+                loadingOverlay.classList.remove("flex");
+                document.getElementById('main-app').classList.remove("blur-sm");
             }
         });
     }

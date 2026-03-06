@@ -902,16 +902,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (response.ok) {
-                    aiStatusMessage.textContent = 'AI Settings Updated Successfully!';
+                    aiStatusMessage.textContent = 'AI Settings Updated Successfully! Please clear data to apply.';
                     aiStatusMessage.className = 'text-sm rounded p-3 text-center font-bold bg-green-500/20 text-green-400 border border-green-500/30';
                     aiStatusMessage.classList.remove('hidden');
                     aiTokenInput.placeholder = "•••••••••••••••• (Saved)";
                     aiTokenInput.value = "";
                     
-                    if (confirm("Settings updated successfully! Would you like to clear all previously generated AI summaries and scores to apply these new settings to your existing messages?")) {
-                        await fetch('/api/ai/clear', { method: 'DELETE' });
-                        window.location.reload();
-                    }
+                    setTimeout(() => {
+                        openClearAiModal();
+                    }, 1500);
                 } else {
                     const err = await response.json();
                     aiStatusMessage.textContent = `Update Failed: ${err.detail || 'Error'}`;
@@ -930,28 +929,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const clearAiDataBtn = document.getElementById('clear-ai-data-btn');
+    const clearAiModal = document.getElementById('clear-ai-modal');
+    const cancelClearAiBtn = document.getElementById('cancel-clear-ai-btn');
+    const confirmClearAiBtn = document.getElementById('confirm-clear-ai-btn');
+    
+    let clearAiCountdownInterval;
+
+    const openClearAiModal = () => {
+        clearAiModal.classList.remove('hidden');
+        clearAiModal.classList.add('flex');
+        
+        confirmClearAiBtn.disabled = true;
+        confirmClearAiBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        let counter = 5;
+        confirmClearAiBtn.textContent = `Clear Data (${counter})`;
+        
+        clearInterval(clearAiCountdownInterval);
+        clearAiCountdownInterval = setInterval(() => {
+            counter--;
+            if (counter > 0) {
+                confirmClearAiBtn.textContent = `Clear Data (${counter})`;
+            } else {
+                clearInterval(clearAiCountdownInterval);
+                confirmClearAiBtn.textContent = 'Clear Data';
+                confirmClearAiBtn.disabled = false;
+                confirmClearAiBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }, 1000);
+    };
+
     if (clearAiDataBtn) {
-        clearAiDataBtn.addEventListener('click', async (e) => {
+        clearAiDataBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if (confirm("Are you sure you want to delete all AI summaries and priority scores? This cannot be undone.")) {
-                const orig = clearAiDataBtn.innerHTML;
-                clearAiDataBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing...';
-                clearAiDataBtn.disabled = true;
-                
-                try {
-                    const res = await fetch('/api/ai/clear', { method: 'DELETE' });
-                    if (res.ok) {
-                        window.location.reload();
-                    } else {
-                        alert("Failed to clear data.");
-                        clearAiDataBtn.innerHTML = orig;
-                        clearAiDataBtn.disabled = false;
-                    }
-                } catch (err) {
-                    alert("Network error.");
-                    clearAiDataBtn.innerHTML = orig;
-                    clearAiDataBtn.disabled = false;
+            openClearAiModal();
+        });
+    }
+
+    if (cancelClearAiBtn) {
+        cancelClearAiBtn.addEventListener('click', () => {
+            clearInterval(clearAiCountdownInterval);
+            clearAiModal.classList.add('hidden');
+            clearAiModal.classList.remove('flex');
+        });
+    }
+
+    if (confirmClearAiBtn) {
+        confirmClearAiBtn.addEventListener('click', async () => {
+            confirmClearAiBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing...';
+            confirmClearAiBtn.disabled = true;
+            cancelClearAiBtn.disabled = true;
+            
+            // Show main loading indicator
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingText.textContent = "Clearing AI data...";
+            loadingOverlay.classList.remove("hidden");
+            loadingOverlay.classList.add("flex");
+            document.getElementById('main-app').classList.add("blur-sm");
+            
+            try {
+                const res = await fetch('/api/ai/clear', { method: 'DELETE' });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Failed to clear data.");
+                    window.location.reload();
                 }
+            } catch (err) {
+                alert("Network error.");
+                window.location.reload();
             }
         });
     }

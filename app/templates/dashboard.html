@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socialease Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- Core Web Vitals: Preconnect to external domains -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <!-- Core Web Vitals: Non-blocking script loading -->
+    <script>
+        // Inject current user into global scope for app.js to use
+        window.CURRENT_USER = "{{ user.username }}";
+    </script>
+    <script src="/static/js/app.js" defer></script>
+</head>
+<body class="bg-[#313338] text-gray-100 h-screen flex overflow-hidden relative">
+
+    
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="absolute inset-0 z-[60] hidden flex-col items-center justify-center bg-black/60 backdrop-blur-md">
+        <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-500 mb-4"></i>
+        <p id="loading-text" class="text-white font-bold text-lg">Gathering messages...</p>
+    </div>
+
+    <!-- LOCK SCREEN OVERLAY -->
+    <div id="lock-screen" class="absolute inset-0 z-50 hidden flex-col items-center justify-center bg-black/60 backdrop-blur-md">
+        <div class="bg-[#313338] p-8 rounded-lg shadow-2xl w-96 text-center border border-gray-700">
+            <div class="w-20 h-20 bg-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <i class="fa-solid fa-lock text-3xl text-white"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white mb-2">Alright Then, Keep Your Secrets.</h2>
+            <p class="text-gray-400 text-sm mb-6">Enter your password to unlock the dashboard.</p>
+            <input type="password" id="unlock-password" placeholder="Password" class="w-full bg-[#1E1F22] text-white p-3 rounded mb-4 outline-none focus:ring-2 focus:ring-emerald-500" />
+            <button id="unlock-btn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded transition-colors">
+                Unlock
+            </button>
+            <p id="unlock-error" class="text-red-500 text-xs mt-3 hidden">Incorrect password. Please try again.</p>
+        </div>
+    </div>
+
+    
+    <!-- SETTINGS MODAL -->
+    <div id="user-settings-modal" class="absolute inset-0 z-40 hidden flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-[#313338] p-6 rounded-lg shadow-2xl w-[450px] border border-gray-700 relative">
+            <i id="close-settings-modal" class="fa-solid fa-xmark absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer text-xl"></i>
+            <h2 class="text-xl font-bold text-white mb-4">Account Settings</h2>
+            <p class="text-gray-400 text-sm mb-6">Update your username or reset your password.</p>
+            
+            <form id="user-settings-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Username</label>
+                    <input type="text" id="settings-username" value="{{ user.username }}" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500">
+                    <div id="settings-username-msg" class="text-xs mt-1 hidden"></div>
+                </div>
+
+                <div class="border-t border-gray-700/50 my-4"></div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">New Password (Optional)</label>
+                    <input type="password" id="settings-password" placeholder="Leave blank to keep current" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500">
+                    
+                    <!-- Password Requirements (Hidden initially) -->
+                    <div id="settings-password-reqs" class="text-[10px] text-gray-400 mt-2 space-y-1 hidden">
+                        <div id="set-req-length" class="flex items-center"><i class="fa-solid fa-circle-xmark text-red-500 mr-1.5 w-3 text-center"></i> 8+ characters</div>
+                        <div id="set-req-upper" class="flex items-center"><i class="fa-solid fa-circle-xmark text-red-500 mr-1.5 w-3 text-center"></i> 1 uppercase letter</div>
+                        <div id="set-req-lower" class="flex items-center"><i class="fa-solid fa-circle-xmark text-red-500 mr-1.5 w-3 text-center"></i> 1 lowercase letter</div>
+                        <div id="set-req-number" class="flex items-center"><i class="fa-solid fa-circle-xmark text-red-500 mr-1.5 w-3 text-center"></i> 1 number</div>
+                        <div id="set-req-special" class="flex items-center"><i class="fa-solid fa-circle-xmark text-red-500 mr-1.5 w-3 text-center"></i> 1 special character</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Confirm New Password</label>
+                    <input type="password" id="settings-confirm-password" placeholder="Confirm new password" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500" disabled>
+                    <div class="text-xs mt-1 flex items-center hidden" id="settings-confirm-msg-container">
+                        <i id="settings-confirm-icon" class="fa-solid fa-circle-xmark text-red-500 mr-1"></i>
+                        <span id="settings-confirm-msg" class="text-red-400">Passwords do not match</span>
+                    </div>
+                </div>
+
+                <div id="settings-status-message" class="text-sm hidden rounded p-3 text-center font-bold mt-4"></div>
+
+                <button type="submit" id="settings-submit-btn" disabled class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded transition-colors mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PLATFORM SETUP MODAL -->
+    <div id="platform-setup-modal" class="absolute inset-0 z-40 hidden flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-[#313338] p-6 rounded-lg shadow-2xl w-[500px] border border-gray-700 relative">
+            <i id="close-platform-modal" class="fa-solid fa-xmark absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer text-xl"></i>
+            <h2 id="platform-modal-title" class="text-xl font-bold text-white mb-4">Connect Platform</h2>
+            <p class="text-gray-400 text-sm mb-4">Select a platform.</p>
+            
+            <form id="platform-form" class="space-y-4">
+                <input type="hidden" id="edit-platform-id" value="">
+                <div>
+                    <select id="platform-select" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500">
+                        <option value="" disabled selected>Select a Platform...</option>
+                        <option value="DISCORD">Discord</option>
+                        <option value="INSTAGRAM">Instagram</option>
+                        <option value="FACEBOOK">Facebook</option>
+                        <option value="TIKTOK">TikTok</option>
+                        <option value="YOUTUBE">YouTube</option>
+                    </select>
+                </div>
+                
+                <div id="platform-instructions" class="text-gray-400 text-sm hidden bg-[#2B2D31] p-3 rounded border border-gray-800">
+                </div>
+
+                
+                <div id="field-custom-name-container" class="hidden">
+                    <label id="label-custom-name" class="block text-xs font-bold text-gray-400 uppercase mb-1">Display Name</label>
+                    <input type="text" id="platform-custom-name" placeholder="e.g. My Main Server" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div id="field-account-id-container" class="hidden">
+                    <label id="label-account-id" class="block text-xs font-bold text-gray-400 uppercase mb-1">Account ID</label>
+                    <input type="text" id="platform-account-id" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div id="field-token-container" class="hidden">
+                    <label id="label-token" class="block text-xs font-bold text-gray-400 uppercase mb-1">Access Token</label>
+                    <input type="password" id="platform-token" class="w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div id="discord-channels-container" class="hidden mt-4">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Selected Channels to Sync</label>
+                    <div id="discord-channels-list" class="bg-[#1E1F22] border border-gray-900 rounded p-2 max-h-40 overflow-y-auto space-y-2 text-sm text-gray-300">
+                        <div class="text-center text-gray-500 py-2"><i class="fa-solid fa-spinner fa-spin"></i> Loading channels...</div>
+                    </div>
+                </div>
+                
+                <div id="platform-status-message" class="text-sm hidden rounded p-3 text-center font-bold"></div>
+
+                <button type="submit" id="platform-submit-btn" disabled class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Connect Platform
+                </button>
+                <button type="button" id="platform-close-success-btn" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors mt-4">
+                    Close & Refresh
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER (Will be blurred when locked) -->
+    <div id="main-app" class="flex flex-1 w-full h-full transition-all duration-300">
+
+        <!-- Sidebar (Inbox/Channels) -->
+        <div class="w-64 bg-[#1E1F22] flex flex-col flex-shrink-0">
+            <div class="h-12 border-b border-gray-900 flex items-center px-4 font-bold text-lg shadow-sm text-white">
+                <i class="fa-solid fa-bolt text-green-400 mr-2 text-[0.8em]"></i>Social<span class="text-green-400">ease</span>
+            </div>
+            <div class="flex-1 overflow-y-auto scrollbar-hide p-2 space-y-1" id="sidebar-tabs">
+                <div class="sidebar-tab px-2 py-2 text-white hover:bg-[#3F4147] hover:text-gray-200 rounded cursor-pointer flex items-center bg-[#3F4147] group" data-filter="ALL" data-icon="fa-solid fa-inbox" data-title="All Messages">
+                    <i class="fa-solid fa-inbox w-5 text-center mr-2"></i> 
+                    <span class="flex-1 text-sm truncate">All Messages</span>
+                    <i class="fa-solid fa-arrows-rotate text-gray-400 hover:text-emerald-400 hidden group-hover:block ml-2 text-xs refresh-btn" data-platform="All Messages"></i>
+                </div>
+                
+                {% for conn in user.platforms %}
+                <div class="sidebar-tab px-2 py-2 text-gray-400 hover:bg-[#3F4147] hover:text-gray-200 rounded cursor-pointer flex items-center group" 
+                     data-filter="{{ conn.platform_name }}" 
+                     data-account="{{ conn.account_id }}"
+                     data-custom-name="{{ conn.custom_name or conn.account_id }}"
+                     {% if conn.platform_name == 'INSTAGRAM' or conn.platform_name == 'FACEBOOK' %}
+                        data-icon="fa-brands fa-instagram text-pink-500"
+                     {% elif conn.platform_name == 'YOUTUBE' %}
+                        data-icon="fa-brands fa-youtube text-red-500"
+                     {% elif conn.platform_name == 'DISCORD' %}
+                        data-icon="fa-brands fa-discord text-[#5865F2]"
+                     {% elif conn.platform_name == 'TIKTOK' %}
+                        data-icon="fa-brands fa-tiktok text-white"
+                     {% else %}
+                        data-icon="fa-solid fa-plug"
+                     {% endif %}
+                     data-title="{{ conn.custom_name or conn.account_id }}">
+                    
+                    {% if conn.platform_name == 'INSTAGRAM' or conn.platform_name == 'FACEBOOK' %}
+                        <i class="fa-brands fa-instagram w-5 text-center mr-2 text-pink-500"></i>
+                    {% elif conn.platform_name == 'YOUTUBE' %}
+                        <i class="fa-brands fa-youtube w-5 text-center mr-2 text-red-500"></i>
+                    {% elif conn.platform_name == 'DISCORD' %}
+                        <i class="fa-brands fa-discord w-5 text-center mr-2 text-[#5865F2]"></i>
+                    {% elif conn.platform_name == 'TIKTOK' %}
+                        <i class="fa-brands fa-tiktok w-5 text-center mr-2 text-white"></i>
+                    {% else %}
+                        <i class="fa-solid fa-plug w-5 text-center mr-2"></i>
+                    {% endif %}
+                    <span class="truncate text-sm flex-1">{{ conn.custom_name or conn.account_id }}</span>
+                    <div class="hidden group-hover:flex items-center space-x-2 ml-2 text-xs">
+                        <i class="fa-solid fa-gear text-gray-400 hover:text-emerald-400 edit-platform-btn" data-id="{{ conn.id }}" data-platform="{{ conn.platform_name }}" data-account="{{ conn.account_id }}" data-custom-name="{{ conn.custom_name or conn.account_id }}" title="Edit"></i>
+                        <i class="fa-solid fa-arrows-rotate text-gray-400 hover:text-emerald-400 refresh-btn" data-platform="{{ conn.platform_name }}" title="Gather Messages"></i>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div id="add-platform-btn" class="px-2 py-2 text-white hover:bg-[#3F4147] hover:text-gray-200 rounded cursor-pointer flex items-center text-sm font-bold mt-2">
+                    <i class="fa-solid fa-plus w-5 text-center mr-2"></i> Connect Platform
+                </div>
+
+                <div class="my-4 border-t border-gray-700/50 mx-2"></div>
+                
+                <div id="summarize-btn" class="px-2 py-2 text-white hover:bg-[#3F4147] hover:text-gray-200 rounded cursor-pointer flex items-center font-bold text-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-center mr-2"></i> AI Summaries
+                </div>
+                <!-- Future filtering tabs can go here -->
+            </div>
+            
+            <!-- User Profile Panel -->
+            <div class="h-[52px] bg-[#232428] flex items-center px-2 mt-auto">
+                <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center mr-2">
+                    <i class="fa-solid fa-user text-xs"></i>
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div class="text-sm font-bold leading-tight text-white truncate">{{ user.username }}</div>
+                </div>
+                <div class="flex items-center space-x-2 text-gray-400 flex-shrink-0 relative">
+                    <i id="settings-gear" class="fa-solid fa-gear hover:text-gray-200 cursor-pointer"></i>
+                    
+                    <!-- Settings Popover -->
+                    <div id="settings-popover" class="hidden absolute bottom-full mb-2 right-0 w-32 bg-[#1E1F22] rounded shadow-lg border border-gray-900 overflow-hidden text-sm z-50">
+                        <div id="open-settings-btn" class="px-3 py-2 text-gray-300 hover:bg-[#3F4147] hover:text-white cursor-pointer"><i class="fa-solid fa-wrench w-4 mr-1 text-center"></i> Settings</div>
+                        <div id="sign-out-btn" class="px-3 py-2 text-red-400 hover:bg-[#3F4147] hover:text-red-300 cursor-pointer"><i class="fa-solid fa-arrow-right-from-bracket w-4 mr-1 text-center"></i> Sign Out</div>
+                    </div>
+                    
+                    <!-- Lock Button -->
+                    <i id="lock-btn" class="fa-solid fa-lock hover:text-red-400 cursor-pointer text-red-500 ml-1" title="Lock Dashboard"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col bg-[#313338]">
+            <!-- Top Nav -->
+            <div class="h-12 border-b border-gray-900 flex items-center px-4 shadow-sm justify-between">
+                <div class="font-bold flex items-center text-white" id="center-header-title">
+                    <i id="center-header-icon" class="fa-solid fa-inbox w-5 text-center mr-2 text-gray-400"></i>
+                    <span id="center-header-text">All Messages</span>
+                </div>
+                <div class="flex items-center space-x-4 text-gray-400">
+                    <select id="time-filter" class="bg-[#1E1F22] text-gray-400 px-2 py-1 rounded text-sm outline-none cursor-pointer border border-gray-800 focus:border-emerald-500">
+                        <option value="1">Last 1 Hour</option>
+                        <option value="4">Last 4 Hours</option>
+                        <option value="12">Last 12 Hours</option>
+                        <option value="24">Last 1 Day</option>
+                        <option value="168">Last 7 Days</option>
+                        <option value="720">Last 30 Days</option>
+                    </select>
+                    <div class="bg-[#1E1F22] px-2 py-1 rounded flex items-center text-sm w-48 border border-gray-800 focus-within:border-emerald-500">
+                        <input type="text" id="search-input" placeholder="Search messages..." class="bg-transparent outline-none w-full placeholder-gray-500">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Feed -->
+            <div class="flex-1 overflow-y-auto p-4" id="message-container">
+                <!-- Messages will be loaded here via JS -->
+                <div class="flex items-center justify-center h-full text-gray-500">
+                    Loading secure feed...
+                </div>
+            </div>
+
+            <!-- Chat Input (Simulated Reply Box) -->
+            <div class="p-4">
+                <div class="bg-[#383A40] rounded-lg p-3 flex items-center focus-within:ring-2 focus-within:ring-emerald-500 transition-all">
+                    <i class="fa-solid fa-circle-plus text-gray-400 hover:text-gray-200 cursor-pointer text-xl mr-3"></i>
+                    <input id="reply-input" type="text" placeholder="Select a message to reply..." disabled class="bg-transparent outline-none flex-1 text-gray-200 placeholder-gray-500">
+                    <button id="reply-submit-btn" disabled class="text-gray-400 hover:text-emerald-400 cursor-pointer outline-none disabled:opacity-50">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar (Message Details / AI Context) -->
+        <div class="w-72 bg-[#2B2D31] hidden lg:flex flex-col border-l border-gray-900 flex-shrink-0">
+            <div class="h-12 border-b border-gray-900 flex items-center px-4 font-bold">
+                Thread Details
+            </div>
+            <div class="p-4 flex-1" id="ai-context-panel">
+                <div class="flex flex-col items-center justify-center h-full text-gray-500 text-center space-y-4">
+                    <i class="fa-solid fa-robot text-4xl"></i>
+                    <p class="text-sm">Select a message to view sender details and AI context.</p>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End Main App Container -->
+
+</body>
+</html>

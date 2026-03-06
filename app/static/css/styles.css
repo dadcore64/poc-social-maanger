@@ -1,0 +1,5 @@
+/* Compiled version of styles.scss for local development without a build step */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.blur-sm { filter: blur(4px); }

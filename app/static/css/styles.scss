@@ -1,0 +1,24 @@
+/* 
+    Core Web Vitals Best Practices:
+    - Avoid huge CSS files. 
+    - Minify in production.
+    - Set font-display: swap for custom fonts (though we use system fonts here).
+*/
+
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+/* Custom scrollbar hiding while maintaining functionality */
+.scrollbar-hide::-webkit-scrollbar { 
+    display: none; 
+}
+.scrollbar-hide { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
+/* Utility for lock screen */
+.blur-sm { 
+    filter: blur(4px); 
+}

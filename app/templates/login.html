@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socialease - Login</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center h-screen flex items-center justify-center relative">
+
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+
+    <div class="bg-[#313338] p-8 rounded-lg shadow-2xl w-[480px] z-10 border border-gray-700 relative overflow-hidden transition-all duration-300 min-h-[420px]" id="auth-container">
+        
+        <!-- Login Form -->
+        <div id="login-section" class="w-full transition-opacity duration-300">
+            <div class="text-center mb-6">
+                <div class="text-4xl font-bold text-white mb-4 mt-2">
+                    <i class="fa-solid fa-bolt text-green-400 mr-2 text-[0.8em]"></i>Social<span class="text-green-400">ease</span>
+                </div>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Username</label>
+                    <input type="text" id="login-username" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all" required>
+                    <a href="#" id="show-forgot" class="text-green-400 text-xs hover:underline mt-1 inline-block">Forgot your password?</a>
+                </div>
+                <p id="login-error" class="text-red-500 text-xs hidden"></p>
+                <button type="submit" id="login-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded transition-colors mt-2">
+                    Log In
+                </button>
+                <p class="text-gray-400 text-sm mt-2 text-center">Need an account? <a href="#" id="show-register" class="text-green-400 hover:underline">Register</a></p>
+            </form>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="register-section" class="w-full hidden opacity-0 transition-opacity duration-300">
+            <div class="text-center mb-6 mt-2">
+                <div class="text-3xl font-bold text-white mb-4 mt-2 border-b border-gray-700/50 pb-4">
+                    <i class="fa-solid fa-bolt text-green-400 mr-2 text-[0.8em]"></i>Social<span class="text-green-400">ease</span>
+                </div>
+                <h2 class="text-xl font-bold text-white">Create an account</h2>
+            </div>
+            
+            <form id="register-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
+                    <div class="relative">
+                        <input type="email" id="reg-email" class="w-full bg-[#1E1F22] text-white p-2.5 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all pr-10" required>
+                        <i id="email-icon" class="fa-solid absolute right-3 top-3 hidden"></i>
+                    </div>
+                    <p id="email-msg" class="text-xs mt-1 hidden"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Username</label>
+                    <div class="relative">
+                        <input type="text" id="reg-username" class="w-full bg-[#1E1F22] text-white p-2.5 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all pr-10" required>
+                        <i id="username-icon" class="fa-solid absolute right-3 top-3 hidden"></i>
+                    </div>
+                    <p id="username-msg" class="text-xs mt-1 hidden"></p>
+                    <div id="username-suggestions" class="flex gap-2 mt-2 hidden text-xs flex-wrap"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Password</label>
+                    <input type="password" id="reg-password" class="w-full bg-[#1E1F22] text-white p-2.5 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all" required>
+                    <div class="bg-[#1E1F22] p-3 rounded mt-2 text-xs space-y-1">
+                        <div id="req-length" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 8 or more characters</div>
+                        <div id="req-upper" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 capital letter</div>
+                        <div id="req-lower" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 lowercase letter</div>
+                        <div id="req-number" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 number</div>
+                        <div id="req-special" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 special character (!@#$%^&*_ etc.)</div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Confirm Password</label>
+                    <div class="relative">
+                        <input type="password" id="reg-confirm-password" class="w-full bg-[#1E1F22] text-white p-2.5 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all pr-10" required>
+                        <i id="confirm-icon" class="fa-solid absolute right-3 top-3 hidden"></i>
+                    </div>
+                    <p id="confirm-msg" class="text-xs mt-1 hidden text-red-500">Passwords do not match.</p>
+                </div>
+                <p id="reg-error" class="text-red-500 text-xs hidden"></p>
+                <button type="submit" id="reg-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded transition-colors mt-2 disabled:opacity-50">
+                    Continue
+                </button>
+                <p class="text-gray-400 text-sm mt-2 text-center pb-4"><a href="#" id="show-login" class="text-green-400 hover:underline">Already have an account?</a></p>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgot-section" class="w-full hidden opacity-0 transition-opacity duration-300">
+            <div class="text-center mb-6 mt-8">
+                <div class="text-3xl font-bold text-white mb-4 mt-2 border-b border-gray-700/50 pb-4">
+                    <i class="fa-solid fa-bolt text-green-400 mr-2 text-[0.8em]"></i>Social<span class="text-green-400">ease</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Reset Password</h2>
+                <p class="text-gray-400 text-sm mt-2">Enter your email address and we'll send you a link to reset your password.</p>
+            </div>
+            
+            <form id="forgot-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
+                    <input type="email" id="forgot-email" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all" required>
+                </div>
+                <p id="forgot-msg" class="text-xs hidden text-center font-bold"></p>
+                <div id="dev-mock-link-container" class="hidden text-center bg-gray-800 p-3 rounded text-sm text-gray-300 border border-green-500/50">
+                    <p class="mb-2"><i class="fa-solid fa-code text-green-400"></i> [Dev Mode] Simulate email link:</p>
+                    <button type="button" id="dev-mock-link" class="text-green-400 hover:underline font-bold">Proceed to Reset Password</button>
+                </div>
+                <button type="submit" id="forgot-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded transition-colors mt-2">
+                    Send Reset Link
+                </button>
+                <p class="text-gray-400 text-sm mt-4 text-center"><a href="#" id="forgot-back-to-login" class="text-green-400 hover:underline"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Login</a></p>
+            </form>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="reset-section" class="w-full hidden opacity-0 transition-opacity duration-300">
+            <div class="text-center mb-6 mt-4">
+                <div class="text-3xl font-bold text-white mb-4 mt-2 border-b border-gray-700/50 pb-4">
+                    <i class="fa-solid fa-bolt text-green-400 mr-2 text-[0.8em]"></i>Social<span class="text-green-400">ease</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Create New Password</h2>
+                <p class="text-gray-400 text-sm mt-1">Please enter your new password below.</p>
+            </div>
+            
+            <form id="reset-form" class="space-y-4">
+                <input type="hidden" id="reset-token">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">New Password</label>
+                    <input type="password" id="reset-password" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all" required>
+                    <div class="bg-[#1E1F22] p-3 rounded mt-2 text-xs space-y-1">
+                        <div id="reset-req-length" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 8 or more characters</div>
+                        <div id="reset-req-upper" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 capital letter</div>
+                        <div id="reset-req-lower" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 lowercase letter</div>
+                        <div id="reset-req-number" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 number</div>
+                        <div id="reset-req-special" class="text-gray-500"><i class="fa-solid fa-xmark mr-1"></i> 1 special character (!@#$%^&*_ etc.)</div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Confirm New Password</label>
+                    <div class="relative">
+                        <input type="password" id="reset-confirm-password" class="w-full bg-[#1E1F22] text-white p-3 rounded outline-none focus:ring-2 focus:ring-green-500 transition-all pr-10" required>
+                        <i id="reset-confirm-icon" class="fa-solid absolute right-3 top-3 hidden"></i>
+                    </div>
+                    <p id="reset-confirm-msg" class="text-xs mt-1 hidden text-red-500">Passwords do not match.</p>
+                </div>
+                <p id="reset-error" class="text-red-500 text-xs hidden"></p>
+                <button type="submit" id="reset-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded transition-colors mt-2 disabled:opacity-50">
+                    Update Password
+                </button>
+                <p class="text-gray-400 text-sm mt-4 text-center"><a href="#" id="reset-back-to-login" class="text-green-400 hover:underline">Cancel and return to Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginSection = document.getElementById('login-section');
+            const registerSection = document.getElementById('register-section');
+            const showRegisterBtn = document.getElementById('show-register');
+            const showLoginBtn = document.getElementById('show-login');
+            
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginError = document.getElementById('login-error');
+            const regError = document.getElementById('reg-error');
+
+            const forgotSection = document.getElementById('forgot-section');
+            const resetSection = document.getElementById('reset-section');
+            const showForgotBtn = document.getElementById('show-forgot');
+            const forgotBackToLogin = document.getElementById('forgot-back-to-login');
+            const resetBackToLogin = document.getElementById('reset-back-to-login');
+            const forgotForm = document.getElementById('forgot-form');
+            const resetForm = document.getElementById('reset-form');
+            const devMockLinkBtn = document.getElementById('dev-mock-link');
+
+            const switchSection = (hideSection, showSection) => {
+                hideSection.style.opacity = '0';
+                setTimeout(() => {
+                    hideSection.classList.add('hidden');
+                    showSection.classList.remove('hidden');
+                    setTimeout(() => showSection.style.opacity = '1', 50);
+                }, 300);
+            };
+
+            showRegisterBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSection(loginSection, registerSection);
+            });
+
+            showLoginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSection(registerSection, loginSection);
+            });
+
+            showForgotBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSection(loginSection, forgotSection);
+            });
+
+            forgotBackToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSection(forgotSection, loginSection);
+            });
+
+            resetBackToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSection(resetSection, loginSection);
+            });
+
+            forgotForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgot-email').value;
+                const btn = document.getElementById('forgot-btn');
+                const msg = document.getElementById('forgot-msg');
+                const mockContainer = document.getElementById('dev-mock-link-container');
+                
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+                msg.classList.add('hidden');
+                mockContainer.classList.add('hidden');
+
+                try {
+                    const response = await fetch('/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await response.json();
+                    
+                    msg.textContent = data.message;
+                    msg.className = 'text-xs text-center font-bold text-green-500 mt-2';
+                    msg.classList.remove('hidden');
+
+                    if (data.dev_token) {
+                        document.getElementById('reset-token').value = data.dev_token;
+                        mockContainer.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    msg.textContent = 'Network error occurred.';
+                    msg.className = 'text-xs text-center font-bold text-red-500 mt-2';
+                    msg.classList.remove('hidden');
+                } finally {
+                    btn.innerHTML = 'Send Reset Link';
+                    btn.disabled = false;
+                }
+            });
+
+            devMockLinkBtn.addEventListener('click', () => {
+                switchSection(forgotSection, resetSection);
+            });
+
+            const resetPasswordInput = document.getElementById('reset-password');
+            const resetConfirmPasswordInput = document.getElementById('reset-confirm-password');
+            const resetConfirmIcon = document.getElementById('reset-confirm-icon');
+            const resetConfirmMsg = document.getElementById('reset-confirm-msg');
+            const resetBtn = document.getElementById('reset-btn');
+
+            let isResetPasswordValid = false;
+            let isResetConfirmValid = false;
+
+            const checkResetFormValidity = () => {
+                resetBtn.disabled = !(isResetPasswordValid && isResetConfirmValid);
+            };
+
+            const updateReq = (id, passed) => {
+                const el = document.getElementById(id);
+                if (passed) {
+                    el.classList.remove('text-gray-500');
+                    el.classList.add('text-green-500');
+                    el.innerHTML = el.innerHTML.replace('fa-xmark', 'fa-check');
+                } else {
+                    el.classList.remove('text-green-500');
+                    el.classList.add('text-gray-500');
+                    el.innerHTML = el.innerHTML.replace('fa-check', 'fa-xmark');
+                }
+                return passed;
+            };
+
+            
+            const validatePasswordStrength = (val, prefix) => {
+                const reqLength = updateReq(`${prefix}-length`, val.length >= 8);
+                const reqUpper = updateReq(`${prefix}-upper`, /[A-Z]/.test(val));
+                const reqLower = updateReq(`${prefix}-lower`, /[a-z]/.test(val));
+                const reqNumber = updateReq(`${prefix}-number`, /\d/.test(val));
+                const reqSpecial = updateReq(`${prefix}-special`, /[^a-zA-Z0-9]/.test(val));
+                return reqLength && reqUpper && reqLower && reqNumber && reqSpecial;
+            };
+
+            const validateConfirmPassword = (passwordVal, confirmVal, confirmInput, confirmIcon, confirmMsg) => {
+                if (confirmVal === '') {
+                    confirmIcon.classList.add('hidden');
+                    confirmMsg.classList.add('hidden');
+                    confirmInput.classList.remove('ring-red-500', 'ring-2');
+                    return false;
+                } else if (confirmVal === passwordVal) {
+                    confirmIcon.classList.remove('hidden', 'fa-xmark', 'text-red-500');
+                    confirmIcon.classList.add('fa-check', 'text-green-500');
+                    confirmInput.classList.remove('ring-red-500', 'ring-2');
+                    confirmMsg.classList.add('hidden');
+                    return true;
+                } else {
+                    confirmIcon.classList.remove('hidden', 'fa-check', 'text-green-500');
+                    confirmIcon.classList.add('fa-xmark', 'text-red-500');
+                    confirmInput.classList.add('ring-red-500', 'ring-2');
+                    confirmMsg.classList.remove('hidden');
+                    return false;
+                }
+            };
+resetPasswordInput.addEventListener('input', (e) => {
+                isResetPasswordValid = validatePasswordStrength(e.target.value, 'reset-req');
+                if (resetConfirmPasswordInput.value) {
+                    isResetConfirmValid = validateConfirmPassword(e.target.value, resetConfirmPasswordInput.value, resetConfirmPasswordInput, resetConfirmIcon, resetConfirmMsg);
+                }
+                checkResetFormValidity();
+            });
+
+            resetConfirmPasswordInput.addEventListener('input', (e) => {
+                isResetConfirmValid = validateConfirmPassword(resetPasswordInput.value, e.target.value, resetConfirmPasswordInput, resetConfirmIcon, resetConfirmMsg);
+                checkResetFormValidity();
+            });
+
+            resetForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!isResetPasswordValid || !isResetConfirmValid) return;
+
+                const token = document.getElementById('reset-token').value;
+                const new_password = resetPasswordInput.value;
+                const errorEl = document.getElementById('reset-error');
+                
+                resetBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                resetBtn.disabled = true;
+                errorEl.classList.add('hidden');
+
+                try {
+                    const response = await fetch('/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token, new_password })
+                    });
+                    
+                    if (response.ok) {
+                        // Switch back to login, and show a success message
+                        loginError.textContent = 'Password reset successfully! Please log in with your new password.';
+                        loginError.className = 'text-green-500 text-xs font-bold text-center mb-2 block';
+                        switchSection(resetSection, loginSection);
+                        
+                        // Clear out reset form
+                        resetForm.reset();
+                        isResetPasswordValid = false;
+                        isResetConfirmValid = false;
+                        checkResetFormValidity();
+                    } else {
+                        const err = await response.json();
+                        errorEl.textContent = err.detail || 'Reset failed.';
+                        errorEl.className = 'text-red-500 text-xs text-center mb-2 block';
+                        errorEl.classList.remove('hidden');
+                        resetBtn.innerHTML = 'Update Password';
+                        resetBtn.disabled = false;
+                    }
+                } catch (error) {
+                    errorEl.textContent = 'Network error occurred.';
+                    errorEl.className = 'text-red-500 text-xs text-center mb-2 block';
+                    errorEl.classList.remove('hidden');
+                    resetBtn.innerHTML = 'Update Password';
+                    resetBtn.disabled = false;
+                }
+            });
+            
+            const regUsername = document.getElementById('reg-username');
+            const usernameIcon = document.getElementById('username-icon');
+            const usernameMsg = document.getElementById('username-msg');
+            const usernameSuggestions = document.getElementById('username-suggestions');
+            
+            const regEmail = document.getElementById('reg-email');
+            const emailIcon = document.getElementById('email-icon');
+            const emailMsg = document.getElementById('email-msg');
+            
+            const regPassword = document.getElementById('reg-password');
+            const regConfirmPassword = document.getElementById('reg-confirm-password');
+            const confirmIcon = document.getElementById('confirm-icon');
+            const confirmMsg = document.getElementById('confirm-msg');
+            const regBtn = document.getElementById('reg-btn');
+
+            let isUsernameValid = false;
+            let isEmailValid = false;
+            let isPasswordValid = false;
+            let isConfirmValid = false;
+
+            const checkFormValidity = () => {
+                regBtn.disabled = !(isUsernameValid && isEmailValid && isPasswordValid && isConfirmValid);
+            };
+
+            const debounce = (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func(...args), delay);
+                };
+            };
+
+            const checkUsername = async (username) => {
+                if (!username) {
+                    usernameIcon.classList.add('hidden');
+                    usernameMsg.classList.add('hidden');
+                    usernameSuggestions.classList.add('hidden');
+                    regUsername.classList.remove('ring-red-500', 'ring-2');
+                    isUsernameValid = false;
+                    checkFormValidity();
+                    return;
+                }
+                try {
+                    const res = await fetch(`/check-username?username=${encodeURIComponent(username)}`);
+                    const data = await res.json();
+                    usernameIcon.classList.remove('hidden', 'fa-check', 'text-green-500');
+                    if (data.available) {
+                        usernameIcon.classList.add('fa-check', 'text-green-500');
+                        usernameIcon.classList.remove('fa-xmark', 'text-red-500');
+                        regUsername.classList.remove('ring-red-500', 'ring-2');
+                        usernameMsg.classList.add('hidden');
+                        usernameSuggestions.classList.add('hidden');
+                        isUsernameValid = true;
+                    } else {
+                        usernameIcon.classList.add('fa-xmark', 'text-red-500');
+                        regUsername.classList.add('ring-red-500', 'ring-2');
+                        usernameMsg.textContent = 'Username is unavailable.';
+                        usernameMsg.classList.remove('hidden', 'text-green-500');
+                        usernameMsg.classList.add('text-red-500');
+                        
+                        if (data.suggestions) {
+                            usernameSuggestions.innerHTML = 'Try: ' + data.suggestions.map(s => `<span class="bg-gray-700 px-2 py-1 rounded cursor-pointer hover:bg-gray-600 suggestion-badge">${s}</span>`).join('');
+                            usernameSuggestions.classList.remove('hidden');
+                            document.querySelectorAll('.suggestion-badge').forEach(badge => {
+                                badge.addEventListener('click', () => {
+                                    regUsername.value = badge.textContent;
+                                    checkUsername(badge.textContent);
+                                });
+                            });
+                        }
+                        isUsernameValid = false;
+                    }
+                } catch (e) { console.error(e); }
+                checkFormValidity();
+            };
+
+            const validateEmailFormat = (email) => {
+                const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                return re.test(String(email).toLowerCase());
+            };
+
+            const checkEmail = async (email) => {
+                if (!email) {
+                    emailIcon.classList.add('hidden');
+                    emailMsg.classList.add('hidden');
+                    regEmail.classList.remove('ring-red-500', 'ring-2');
+                    isEmailValid = false;
+                    checkFormValidity();
+                    return;
+                }
+                
+                if (!validateEmailFormat(email)) {
+                    emailIcon.classList.remove('hidden', 'fa-check', 'text-green-500');
+                    emailIcon.classList.add('fa-xmark', 'text-red-500');
+                    regEmail.classList.add('ring-red-500', 'ring-2');
+                    emailMsg.textContent = 'Please enter a valid email address.';
+                    emailMsg.classList.remove('hidden');
+                    emailMsg.classList.add('text-red-500');
+                    isEmailValid = false;
+                    checkFormValidity();
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`/check-email?email=${encodeURIComponent(email)}`);
+                    const data = await res.json();
+                    emailIcon.classList.remove('hidden', 'fa-check', 'text-green-500');
+                    if (data.available) {
+                        emailIcon.classList.add('fa-check', 'text-green-500');
+                        emailIcon.classList.remove('fa-xmark', 'text-red-500');
+                        regEmail.classList.remove('ring-red-500', 'ring-2');
+                        emailMsg.classList.add('hidden');
+                        isEmailValid = true;
+                    } else {
+                        emailIcon.classList.add('fa-xmark', 'text-red-500');
+                        regEmail.classList.add('ring-red-500', 'ring-2');
+                        emailMsg.textContent = 'Email is already registered.';
+                        emailMsg.classList.remove('hidden');
+                        emailMsg.classList.add('text-red-500');
+                        isEmailValid = false;
+                    }
+                } catch (e) { console.error(e); }
+                checkFormValidity();
+            };
+
+            regUsername.addEventListener('input', debounce((e) => checkUsername(e.target.value), 500));
+            regEmail.addEventListener('input', debounce((e) => checkEmail(e.target.value), 500));
+
+            regPassword.addEventListener('input', (e) => {
+                isPasswordValid = validatePasswordStrength(e.target.value, 'req');
+                if (regConfirmPassword.value) {
+                    isConfirmValid = validateConfirmPassword(e.target.value, regConfirmPassword.value, regConfirmPassword, confirmIcon, confirmMsg);
+                }
+                checkFormValidity();
+            });
+
+            regConfirmPassword.addEventListener('input', (e) => {
+                isConfirmValid = validateConfirmPassword(regPassword.value, e.target.value, regConfirmPassword, confirmIcon, confirmMsg);
+                checkFormValidity();
+            });
+
+            showRegisterBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginSection.style.opacity = '0';
+                setTimeout(() => {
+                    loginSection.classList.add('hidden');
+                    registerSection.classList.remove('hidden');
+                    setTimeout(() => registerSection.style.opacity = '1', 50);
+                }, 300);
+            });
+
+            showLoginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                registerSection.style.opacity = '0';
+                setTimeout(() => {
+                    registerSection.classList.add('hidden');
+                    loginSection.classList.remove('hidden');
+                    setTimeout(() => loginSection.style.opacity = '1', 50);
+                }, 300);
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                const btn = document.getElementById('login-btn');
+                
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+                loginError.classList.add('hidden');
+
+                try {
+                    const formData = new URLSearchParams();
+                    formData.append('username', username);
+                    formData.append('password', password);
+
+                    const response = await fetch('/token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/';
+                    } else {
+                        const err = await response.json();
+                        loginError.textContent = err.detail || 'Invalid username or password.';
+                        loginError.classList.remove('hidden');
+                        btn.innerHTML = 'Log In';
+                        btn.disabled = false;
+                    }
+                } catch (error) {
+                    loginError.textContent = 'Network error occurred.';
+                    loginError.classList.remove('hidden');
+                    btn.innerHTML = 'Log In';
+                    btn.disabled = false;
+                }
+            });
+
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmValid) return;
+
+                const email = regEmail.value;
+                const username = regUsername.value;
+                const password = regPassword.value;
+                
+                regBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                regBtn.disabled = true;
+                regError.classList.add('hidden');
+
+                try {
+                    const regResponse = await fetch('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, username, password })
+                    });
+
+                    if (regResponse.ok) {
+                        // Auto login after register
+                        const formData = new URLSearchParams();
+                        formData.append('username', username);
+                        formData.append('password', password);
+
+                        const loginResponse = await fetch('/token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: formData
+                        });
+
+                        if (loginResponse.ok) {
+                            window.location.href = '/';
+                        } else {
+                            // If auto-login fails, switch to login
+                            switchSection(registerSection, loginSection);
+                            loginError.textContent = 'Account created successfully! Please log in.';
+                            loginError.classList.remove('hidden');
+                            loginError.classList.remove('text-red-500');
+                            loginError.classList.add('text-green-500');
+                        }
+                    } else {
+                        const err = await regResponse.json();
+                        regError.textContent = err.detail || 'Registration failed.';
+                        regError.classList.remove('hidden');
+                        regBtn.innerHTML = 'Continue';
+                        regBtn.disabled = false;
+                    }
+                } catch (error) {
+                    regError.textContent = 'Network error occurred.';
+                    regError.classList.remove('hidden');
+                    regBtn.innerHTML = 'Continue';
+                    regBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

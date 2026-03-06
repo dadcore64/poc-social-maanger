@@ -1,0 +1,66 @@
+from sqlalchemy import String, ForeignKey, DateTime, Boolean, func, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
+from typing import List, Optional
+
+from .database import Base
+
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    platforms: Mapped[List["PlatformConnection"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    discord_feeds: Mapped[List["DiscordFeed"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+
+class PlatformConnection(Base):
+    __tablename__ = "platform_connections"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    platform_name: Mapped[str] = mapped_column(String(50))
+    account_id: Mapped[str] = mapped_column(String(255))
+    encrypted_token: Mapped[str] = mapped_column(String(500))
+    custom_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    selected_channels: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
+    user: Mapped["User"] = relationship(back_populates="platforms")
+    messages: Mapped[List["IncomingMessage"]] = relationship(back_populates="platform", cascade="all, delete-orphan")
+
+class IncomingMessage(Base):
+    __tablename__ = "incoming_messages"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    connection_id: Mapped[int] = mapped_column(ForeignKey("platform_connections.id"))
+    external_message_id: Mapped[str] = mapped_column(String(255), index=True)
+    sender_name: Mapped[str] = mapped_column(String(255))
+    sender_avatar_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    content: Mapped[str] = mapped_column(String)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    channel_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    ai_summary: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    ai_priority_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
+    platform: Mapped["PlatformConnection"] = relationship(back_populates="messages")
+
+class DiscordFeed(Base):
+    __tablename__ = "discord_feeds"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    webhook_url: Mapped[str] = mapped_column(String(500))
+    server_name: Mapped[str] = mapped_column(String(255))
+    channel_name: Mapped[str] = mapped_column(String(255))
+
+    user: Mapped["User"] = relationship(back_populates="discord_feeds")
+
+class MuteRule(Base):
+    __tablename__ = "mute_rules"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    keyword: Mapped[str] = mapped_column(String(255))
+    platform: Mapped[str] = mapped_column(String(50), nullable=True) # Optional: filter by platform
+
+    user: Mapped["User"] = relationship()

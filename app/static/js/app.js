@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let priorityBadge = '';
             if (msg.ai_priority_score) {
-                priorityBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded ml-2 font-bold"><i class="fa-solid fa-sparkles text-[10px] mr-1"></i>${msg.ai_priority_score}</span>`;
+                priorityBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded ml-2 font-bold flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" class="mr-1"><path d="M11.5 0C11.5 6.5 6.5 11.5 0 11.5C6.5 11.5 11.5 16.5 11.5 23C11.5 16.5 16.5 11.5 23 11.5C16.5 11.5 11.5 6.5 11.5 0Z" /></svg>${msg.ai_priority_score}</span>`;
             }
 
             let avatarHtml = msg.sender_avatar_url 

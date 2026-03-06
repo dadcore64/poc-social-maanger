@@ -12,6 +12,8 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ai_provider: Mapped[Optional[str]] = mapped_column(String(50), default="gemini", nullable=True)
+    encrypted_ai_token: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
     platforms: Mapped[List["PlatformConnection"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     discord_feeds: Mapped[List["DiscordFeed"]] = relationship(back_populates="user", cascade="all, delete-orphan")

@@ -6,7 +6,7 @@ import time
 
 from .database import engine, Base, SessionLocal
 from .models import User, PlatformConnection, IncomingMessage, MuteRule
-from .routers import auth, messages, views, webhooks, ai, platforms
+from .routers import auth, messages, views, webhooks, ai, platforms, logs
 from .logger import logger
 
 # Create tables in the database
@@ -56,6 +56,7 @@ app.include_router(views.router)
 app.include_router(webhooks.router)
 app.include_router(ai.router)
 app.include_router(platforms.router)
+app.include_router(logs.router)
 
 @app.on_event("startup")
 def startup_event():

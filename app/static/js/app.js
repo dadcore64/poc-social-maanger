@@ -372,88 +372,99 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Settings Modal UI
+    // Settings Modal UI & Tabs
     const settingsModal = document.getElementById('user-settings-modal');
     const closeSettingsBtn = document.getElementById('close-settings-modal');
-    const settingsForm = document.getElementById('user-settings-form');
     
-    const sUsername = document.getElementById('settings-username');
-    const sUsernameMsg = document.getElementById('settings-username-msg');
-    
-    const sPassword = document.getElementById('settings-password');
-    const sPasswordReqs = document.getElementById('settings-password-reqs');
-    
-    const sConfirm = document.getElementById('settings-confirm-password');
-    const sConfirmMsgContainer = document.getElementById('settings-confirm-msg-container');
-    const sConfirmIcon = document.getElementById('settings-confirm-icon');
-    const sConfirmMsg = document.getElementById('settings-confirm-msg');
-    
-    const sSubmit = document.getElementById('settings-submit-btn');
-    const sStatus = document.getElementById('settings-status-message');
-
-    let isSUsernameValid = true; // Starts valid because it's their current username
-    let isSPasswordValid = true; // Starts valid (blank means unchanged)
-    let isSConfirmValid = true;
-    let sUsernameTimer;
-    const currentUsername = window.CURRENT_USER;
+    const settingsTabBtns = document.querySelectorAll('.settings-tab-btn');
+    const settingsContents = document.querySelectorAll('.settings-content');
 
     if (openSettingsBtn) {
         openSettingsBtn.addEventListener('click', () => {
             settingsPopover.classList.add('hidden');
             settingsModal.classList.remove('hidden');
-            settingsModal.classList.add('flex');
-            sStatus.classList.add('hidden');
-            // reset password fields
-            sPassword.value = '';
-            sConfirm.value = '';
-            sConfirm.disabled = true;
-            sPasswordReqs.classList.add('hidden');
-            sConfirmMsgContainer.classList.add('hidden');
-            isSPasswordValid = true;
-            isSConfirmValid = true;
-            checkSettingsFormValidity();
+            // reset to account tab by default
+            document.querySelector('.settings-tab-btn[data-tab="account"]').click();
         });
     }
 
     if (closeSettingsBtn) {
         closeSettingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('hidden');
-            settingsModal.classList.remove('flex');
         });
     }
+
+    // Tab Switching Logic
+    settingsTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            
+            // update buttons
+            settingsTabBtns.forEach(b => {
+                b.classList.remove('active', 'text-gray-200', 'bg-[#3F4147]');
+                b.classList.add('text-gray-400');
+            });
+            btn.classList.add('active', 'text-gray-200', 'bg-[#3F4147]');
+            btn.classList.remove('text-gray-400');
+
+            // show content
+            settingsContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`settings-${tabId}-tab`).classList.remove('hidden');
+
+            if (tabId === 'logs') {
+                fetchLogs();
+            }
+        });
+    });
+
+    // Account Form Logic (Username / Password)
+    const settingsForm = document.getElementById('user-settings-form');
+    const sUsername = document.getElementById('settings-username');
+    const sUsernameMsg = document.getElementById('settings-username-msg');
+    const sPassword = document.getElementById('settings-password');
+    const sPasswordReqs = document.getElementById('settings-password-reqs');
+    const sConfirm = document.getElementById('settings-confirm-password');
+    const sConfirmMsgContainer = document.getElementById('settings-confirm-msg-container');
+    const sConfirmIcon = document.getElementById('settings-confirm-icon');
+    const sConfirmMsg = document.getElementById('settings-confirm-msg');
+    const sSubmit = document.getElementById('settings-submit-btn');
+    const sStatus = document.getElementById('settings-status-message');
+
+    let isSUsernameValid = true;
+    let isSPasswordValid = true;
+    let isSConfirmValid = true;
+    let sUsernameTimer;
+    const currentUsername = window.CURRENT_USER;
 
     const checkSettingsFormValidity = () => {
         sSubmit.disabled = !(isSUsernameValid && isSPasswordValid && isSConfirmValid);
     };
 
-    // Username Validation
     if (sUsername) {
         sUsername.addEventListener('input', (e) => {
             clearTimeout(sUsernameTimer);
             const val = e.target.value.trim();
-            
             if (val === currentUsername) {
                 isSUsernameValid = true;
                 sUsernameMsg.classList.add('hidden');
-                sUsername.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-gray-900 focus:ring-2 focus:ring-emerald-500';
+                sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-gray-800 focus:ring-2 focus:ring-emerald-500';
                 checkSettingsFormValidity();
                 return;
             }
-
             if (val.length < 3 || val.length > 20 || !/^[a-zA-Z0-9_]+$/.test(val)) {
                 isSUsernameValid = false;
                 sUsernameMsg.textContent = '3-20 characters, alphanumeric and underscores only';
                 sUsernameMsg.className = 'text-xs mt-1 text-red-500';
-                sUsername.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
                 sUsernameMsg.classList.remove('hidden');
                 checkSettingsFormValidity();
                 return;
             }
-
             sUsernameMsg.textContent = 'Checking availability...';
             sUsernameMsg.className = 'text-xs mt-1 text-gray-400';
             sUsernameMsg.classList.remove('hidden');
-
             sUsernameTimer = setTimeout(async () => {
                 try {
                     const response = await fetch(`/check-username?username=${encodeURIComponent(val)}`);
@@ -461,12 +472,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.available) {
                         isSUsernameValid = true;
                         sUsernameMsg.innerHTML = '<i class="fa-solid fa-check text-green-500 mr-1"></i><span class="text-green-500">Username is available!</span>';
-                        sUsername.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
+                        sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
                     } else {
                         isSUsernameValid = false;
-                        let sugText = data.suggestions.join(', ');
-                        sUsernameMsg.innerHTML = `<i class="fa-solid fa-xmark text-red-500 mr-1"></i><span class="text-red-500">Taken. Try: ${sugText}</span>`;
-                        sUsername.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                        sUsernameMsg.innerHTML = `<i class="fa-solid fa-xmark text-red-500 mr-1"></i><span class="text-red-500">Taken.</span>`;
+                        sUsername.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
                     }
                     checkSettingsFormValidity();
                 } catch (err) {
@@ -476,7 +486,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Password Validation Helper
     const updateSetReq = (id, isValid) => {
         const el = document.getElementById(id);
         if (isValid) {
@@ -494,9 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sPassword) {
         sPassword.addEventListener('input', (e) => {
             const val = e.target.value;
-            
             if (val === '') {
-                // Keep unchanged
                 sPasswordReqs.classList.add('hidden');
                 sConfirm.disabled = true;
                 sConfirm.value = '';
@@ -506,19 +513,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkSettingsFormValidity();
                 return;
             }
-
             sPasswordReqs.classList.remove('hidden');
             sConfirm.disabled = false;
-
             const reqLength = updateSetReq('set-req-length', val.length >= 8);
             const reqUpper = updateSetReq('set-req-upper', /[A-Z]/.test(val));
             const reqLower = updateSetReq('set-req-lower', /[a-z]/.test(val));
             const reqNumber = updateSetReq('set-req-number', /\d/.test(val));
             const reqSpecial = updateSetReq('set-req-special', /[^a-zA-Z0-9]/.test(val));
-            
             isSPasswordValid = reqLength && reqUpper && reqLower && reqNumber && reqSpecial;
-
-            // Trigger confirm valid logic
             if (sConfirm.value) {
                 isSConfirmValid = (val === sConfirm.value);
                 sConfirmMsgContainer.classList.remove('hidden');
@@ -526,17 +528,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     sConfirmIcon.className = 'fa-solid fa-circle-check text-green-500 mr-1';
                     sConfirmMsg.textContent = 'Passwords match';
                     sConfirmMsg.className = 'text-green-500';
-                    sConfirm.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
+                    sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
                 } else {
                     sConfirmIcon.className = 'fa-solid fa-circle-xmark text-red-500 mr-1';
                     sConfirmMsg.textContent = 'Passwords do not match';
                     sConfirmMsg.className = 'text-red-400';
-                    sConfirm.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                    sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
                 }
             } else {
                 isSConfirmValid = false;
             }
-            
             checkSettingsFormValidity();
         });
     }
@@ -545,18 +546,17 @@ document.addEventListener('DOMContentLoaded', () => {
         sConfirm.addEventListener('input', (e) => {
             const val = e.target.value;
             sConfirmMsgContainer.classList.remove('hidden');
-            
             isSConfirmValid = (sPassword.value === val);
             if (isSConfirmValid) {
                 sConfirmIcon.className = 'fa-solid fa-circle-check text-green-500 mr-1';
                 sConfirmMsg.textContent = 'Passwords match';
                 sConfirmMsg.className = 'text-green-500';
-                sConfirm.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
+                sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-green-500 focus:ring-2 focus:ring-green-500';
             } else {
                 sConfirmIcon.className = 'fa-solid fa-circle-xmark text-red-500 mr-1';
                 sConfirmMsg.textContent = 'Passwords do not match';
                 sConfirmMsg.className = 'text-red-400';
-                sConfirm.className = 'w-full bg-[#1E1F22] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
+                sConfirm.className = 'w-full bg-[#313338] text-white p-2 rounded outline-none border border-red-500 focus:ring-2 focus:ring-red-500';
             }
             checkSettingsFormValidity();
         });
@@ -565,15 +565,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (settingsForm) {
         settingsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const originalText = sSubmit.innerHTML;
             sSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
             sSubmit.disabled = true;
             sStatus.classList.add('hidden');
-
             const newUsername = sUsername.value.trim();
-            const newPassword = sPassword.value; // Don't trim password
-
+            const newPassword = sPassword.value;
             const payload = {};
             if (newUsername !== currentUsername) payload.username = newUsername;
             if (newPassword !== '') payload.password = newPassword;
@@ -584,13 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
                 if (response.ok) {
                     sStatus.textContent = 'Account Updated! Reloading...';
                     sStatus.className = 'text-sm rounded p-3 text-center font-bold bg-green-500/20 text-green-400 border border-green-500/30 mt-4';
                     sStatus.classList.remove('hidden');
-                    
-                    // Reload to reflect new username in UI/cookie
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
                     const err = await response.json();
@@ -610,8 +604,190 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Delete Account Flow
+    const deleteAccountBtn = document.getElementById('delete-account-btn');
+    const deleteAccountModal = document.getElementById('delete-account-modal');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-    // --- 5. PLATFORM SETUP MODAL ---
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            deleteAccountModal.classList.remove('hidden');
+            deleteAccountModal.classList.add('flex');
+        });
+    }
+
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteAccountModal.classList.add('hidden');
+            deleteAccountModal.classList.remove('flex');
+        });
+    }
+
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', async () => {
+            confirmDeleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+            confirmDeleteBtn.disabled = true;
+            cancelDeleteBtn.disabled = true;
+            // Show main loading indicator
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingText.textContent = "Deleting account and all data...";
+            loadingOverlay.classList.remove("hidden");
+            loadingOverlay.classList.add("flex");
+            document.getElementById('main-app').classList.add("blur-sm");
+
+            try {
+                const response = await fetch('/api/users/me', { method: 'DELETE' });
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    alert("Failed to delete account.");
+                    window.location.reload();
+                }
+            } catch (e) {
+                alert("Network error.");
+                window.location.reload();
+            }
+        });
+    }
+
+    // AI Settings Flow
+    const aiProviderSelect = document.getElementById('ai-provider-select');
+    const aiInstructions = document.getElementById('ai-instructions');
+    const aiTokenInput = document.getElementById('ai-token-input');
+    const aiSubmitBtn = document.getElementById('ai-submit-btn');
+    const aiStatusMessage = document.getElementById('ai-status-message');
+    const aiSettingsForm = document.getElementById('ai-settings-form');
+
+    const updateAiInstructions = () => {
+        const p = aiProviderSelect.value;
+        if (p === 'gemini') {
+            aiInstructions.innerHTML = `<h4 class="font-bold text-emerald-400 mb-2"><i class="fa-solid fa-circle-info"></i> How to connect Gemini</h4>
+                <p>Get an API key from Google AI Studio. <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline">Get an API key here.</a></p>`;
+        } else if (p === 'openai') {
+            aiInstructions.innerHTML = `<h4 class="font-bold text-emerald-400 mb-2"><i class="fa-solid fa-circle-info"></i> How to connect OpenAI</h4>
+                <p>Get an API key from your OpenAI dashboard. <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-400 hover:underline">Get an API key here.</a></p>`;
+        } else if (p === 'anthropic') {
+            aiInstructions.innerHTML = `<h4 class="font-bold text-emerald-400 mb-2"><i class="fa-solid fa-circle-info"></i> How to connect Anthropic</h4>
+                <p>Get an API key from Anthropic Console. <a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-blue-400 hover:underline">Get an API key here.</a></p>`;
+        }
+    };
+
+    if (aiProviderSelect) {
+        updateAiInstructions();
+        aiProviderSelect.addEventListener('change', updateAiInstructions);
+    }
+
+    if (aiSettingsForm) {
+        aiSettingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const provider = aiProviderSelect.value;
+            const token = aiTokenInput.value.trim();
+
+            if (!provider) return;
+
+            const originalText = aiSubmitBtn.innerHTML;
+            aiSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            aiSubmitBtn.disabled = true;
+            aiStatusMessage.classList.add('hidden');
+
+            const payload = {
+                ai_provider: provider,
+                ai_token: token || "UNCHANGED"
+            };
+
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    aiStatusMessage.textContent = 'AI Settings Updated Successfully!';
+                    aiStatusMessage.className = 'text-sm rounded p-3 text-center font-bold bg-green-500/20 text-green-400 border border-green-500/30';
+                    aiStatusMessage.classList.remove('hidden');
+                    aiTokenInput.placeholder = "•••••••••••••••• (Saved)";
+                    aiTokenInput.value = "";
+                } else {
+                    const err = await response.json();
+                    aiStatusMessage.textContent = `Update Failed: ${err.detail || 'Error'}`;
+                    aiStatusMessage.className = 'text-sm rounded p-3 text-center font-bold bg-red-500/20 text-red-400 border border-red-500/30';
+                    aiStatusMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                aiStatusMessage.textContent = 'Network error.';
+                aiStatusMessage.className = 'text-sm rounded p-3 text-center font-bold bg-red-500/20 text-red-400 border border-red-500/30';
+                aiStatusMessage.classList.remove('hidden');
+            } finally {
+                aiSubmitBtn.innerHTML = originalText;
+                aiSubmitBtn.disabled = false;
+            }
+        });
+    }
+
+    // Dev Logs Logic
+    const logTypeFilter = document.getElementById('log-type-filter');
+    const logSearchInput = document.getElementById('log-search-input');
+    const refreshLogsBtn = document.getElementById('refresh-logs-btn');
+    const logViewer = document.getElementById('log-viewer');
+    const logCount = document.getElementById('log-count');
+    
+    let rawLogs = [];
+
+    const fetchLogs = async () => {
+        logViewer.innerHTML = '<div class="text-center text-gray-500 py-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading logs...</div>';
+        try {
+            const res = await fetch('/api/logs');
+            const data = await res.json();
+            rawLogs = data.logs || [];
+            renderLogs();
+        } catch (e) {
+            logViewer.innerHTML = '<div class="text-center text-red-500 py-10">Failed to load logs.</div>';
+        }
+    };
+
+    const renderLogs = () => {
+        const type = logTypeFilter.value;
+        const query = logSearchInput.value.toLowerCase();
+        
+        let filtered = rawLogs.filter(line => {
+            if (type !== 'ALL' && !line.includes(`[${type}]`)) return false;
+            if (query && !line.toLowerCase().includes(query)) return false;
+            return true;
+        });
+
+        logCount.textContent = `${filtered.length} lines`;
+        logViewer.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            logViewer.innerHTML = '<div class="text-gray-500 p-2 text-center mt-4">No logs match the current filters.</div>';
+            return;
+        }
+
+        filtered.forEach(line => {
+            const div = document.createElement('div');
+            let className = 'text-gray-300 hover:bg-[#2B2D31] px-1 rounded';
+            if (line.includes('[ERROR]')) className = 'text-red-400 font-bold hover:bg-[#2B2D31] px-1 rounded';
+            else if (line.includes('[WARNING]')) className = 'text-yellow-400 hover:bg-[#2B2D31] px-1 rounded';
+            else if (line.includes('[INFO]')) className = 'text-blue-300 hover:bg-[#2B2D31] px-1 rounded';
+            
+            div.className = className;
+            div.textContent = line;
+            logViewer.appendChild(div);
+        });
+
+        logViewer.scrollTop = logViewer.scrollHeight;
+    };
+
+    if (logTypeFilter) logTypeFilter.addEventListener('change', renderLogs);
+    if (logSearchInput) logSearchInput.addEventListener('input', renderLogs);
+    if (refreshLogsBtn) refreshLogsBtn.addEventListener('click', fetchLogs);
+
+    
+// --- 5. PLATFORM SETUP MODAL ---
     const platformSelect = document.getElementById('platform-select');
     const platformInstructions = document.getElementById('platform-instructions');
     const fieldCustomNameContainer = document.getElementById('field-custom-name-container');

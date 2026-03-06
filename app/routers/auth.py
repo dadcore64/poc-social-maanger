@@ -110,6 +110,8 @@ def logout(response: Response):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
+    ai_provider: Optional[str] = None
+    ai_token: Optional[str] = None
 
 @router.put("/api/users/me")
 def update_user_settings(user_data: UserUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user_from_cookie)):
@@ -125,5 +127,22 @@ def update_user_settings(user_data: UserUpdate, db: Session = Depends(get_db), u
     if user_data.password:
         user.hashed_password = get_password_hash(user_data.password)
         
+    if user_data.ai_provider:
+        user.ai_provider = user_data.ai_provider
+        
+    if user_data.ai_token and user_data.ai_token != "UNCHANGED":
+        from ..security import encrypt_token
+        user.encrypted_ai_token = encrypt_token(user_data.ai_token)
+        
     db.commit()
+    return {"status": "success"}
+
+@router.delete("/api/users/me")
+def delete_user_account(response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user_from_cookie)):
+    if not user:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+    
+    db.delete(user)
+    db.commit()
+    response.delete_cookie("access_token")
     return {"status": "success"}

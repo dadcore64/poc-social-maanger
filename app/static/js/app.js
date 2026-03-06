@@ -901,6 +901,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     aiStatusMessage.classList.remove('hidden');
                     aiTokenInput.placeholder = "•••••••••••••••• (Saved)";
                     aiTokenInput.value = "";
+                    
+                    if (confirm("Settings updated successfully! Would you like to clear all previously generated AI summaries and scores to apply these new settings to your existing messages?")) {
+                        await fetch('/api/ai/clear', { method: 'DELETE' });
+                        window.location.reload();
+                    }
                 } else {
                     const err = await response.json();
                     aiStatusMessage.textContent = `Update Failed: ${err.detail || 'Error'}`;
@@ -914,6 +919,33 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 aiSubmitBtn.innerHTML = originalText;
                 aiSubmitBtn.disabled = false;
+            }
+        });
+    }
+
+    const clearAiDataBtn = document.getElementById('clear-ai-data-btn');
+    if (clearAiDataBtn) {
+        clearAiDataBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm("Are you sure you want to delete all AI summaries and priority scores? This cannot be undone.")) {
+                const orig = clearAiDataBtn.innerHTML;
+                clearAiDataBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing...';
+                clearAiDataBtn.disabled = true;
+                
+                try {
+                    const res = await fetch('/api/ai/clear', { method: 'DELETE' });
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("Failed to clear data.");
+                        clearAiDataBtn.innerHTML = orig;
+                        clearAiDataBtn.disabled = false;
+                    }
+                } catch (err) {
+                    alert("Network error.");
+                    clearAiDataBtn.innerHTML = orig;
+                    clearAiDataBtn.disabled = false;
+                }
             }
         });
     }

@@ -1,5 +1,7 @@
 import os
 import json
+import re
+import emoji
 from google import genai
 from google.genai import types
 from sqlalchemy.orm import Session
@@ -73,6 +75,42 @@ def summarize_and_prioritize_messages(db: Session, user_id: int, hours: int = 1,
 
     if not messages:
         return {"processed_count": 0, "overall_summary": ""}
+
+    # Apply Complexity Filtering
+    stop_words_str = user.ai_stop_words if user.ai_stop_words else "thanks, thank you, great, awesome, love, first, haha, lol, yes, no, true"
+    stop_words = [w.strip() for w in stop_words_str.split(',') if w.strip()]
+    min_length = user.ai_min_length if user.ai_min_length is not None else 10
+
+    filtered_messages = []
+    skipped_count = 0
+    for msg in messages:
+        # Strip emojis
+        content_no_emoji = emoji.replace_emoji(msg.content, replace='')
+        
+        # Strip stop words
+        for w in stop_words:
+            # Use regex to replace whole words case-insensitively
+            content_no_emoji = re.sub(rf'\b{re.escape(w)}\b', '', content_no_emoji, flags=re.IGNORECASE)
+            
+        # Clean up whitespace
+        stripped_content = re.sub(r'\s+', ' ', content_no_emoji).strip()
+        
+        # Check against threshold
+        if len(stripped_content) < min_length:
+            msg.ai_summary = "Skipped (Low Complexity)"
+            msg.ai_priority_score = 0
+            skipped_count += 1
+        else:
+            filtered_messages.append(msg)
+
+    # Commit skipped messages so they don't get picked up again
+    if skipped_count > 0:
+        db.commit()
+
+    if not filtered_messages:
+        return {"processed_count": skipped_count, "overall_summary": f"All {skipped_count} messages were skipped due to low complexity."}
+
+    messages = filtered_messages
 
     client = genai.Client(api_key=api_key)
     processed_count = 0

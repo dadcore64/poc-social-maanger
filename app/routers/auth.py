@@ -113,6 +113,8 @@ class UserUpdate(BaseModel):
     ai_provider: Optional[str] = None
     ai_token: Optional[str] = None
     ai_context_prompt: Optional[str] = None
+    ai_min_length: Optional[int] = None
+    ai_stop_words: Optional[str] = None
 
 @router.put("/api/users/me")
 def update_user_settings(user_data: UserUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user_from_cookie)):
@@ -135,8 +137,14 @@ def update_user_settings(user_data: UserUpdate, db: Session = Depends(get_db), u
         from ..security import encrypt_token
         user.encrypted_ai_token = encrypt_token(user_data.ai_token)
 
-    if user_data.ai_context_prompt:
+    if user_data.ai_context_prompt is not None:
         user.ai_context_prompt = user_data.ai_context_prompt
+        
+    if user_data.ai_min_length is not None:
+        user.ai_min_length = user_data.ai_min_length
+        
+    if user_data.ai_stop_words is not None:
+        user.ai_stop_words = user_data.ai_stop_words
         
     db.commit()
     return {"status": "success"}

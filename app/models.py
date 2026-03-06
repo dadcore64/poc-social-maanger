@@ -17,6 +17,8 @@ class User(Base):
     ai_provider: Mapped[Optional[str]] = mapped_column(String(50), default="gemini", nullable=True)
     encrypted_ai_token: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     ai_context_prompt: Mapped[Optional[str]] = mapped_column(String, default=DEFAULT_AI_PROMPT, nullable=True)
+    ai_min_length: Mapped[Optional[int]] = mapped_column(Integer, default=10, nullable=True)
+    ai_stop_words: Mapped[Optional[str]] = mapped_column(String, default="thanks, thank you, great, awesome, love, first, haha, lol, yes, no, true", nullable=True)
 
     platforms: Mapped[List["PlatformConnection"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     discord_feeds: Mapped[List["DiscordFeed"]] = relationship(back_populates="user", cascade="all, delete-orphan")

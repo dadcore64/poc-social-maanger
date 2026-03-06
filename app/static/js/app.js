@@ -155,6 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
             msgDiv.dataset.priority = msg.ai_priority_score || "N/A";
             msgDiv.dataset.sender = msg.sender_name;
             msgDiv.dataset.platform = msg.platform;
+            msgDiv.dataset.platformCustomName = msg.platform_custom_name || msg.platform;
+            msgDiv.dataset.channelName = msg.channel_name || '';
+            msgDiv.dataset.avatarUrl = msg.sender_avatar_url || '';
+            msgDiv.dataset.content = msg.content || '';
+            msgDiv.dataset.timeString = timeString;
+
+            let priorityBadge = '';
+            if (msg.ai_priority_score) {
+                let pColor = msg.ai_priority_score >= 8 ? 'text-red-400' : 'text-green-400';
+                priorityBadge = `<span class="bg-[#1E1F22] border border-gray-800 text-[10px] px-1.5 py-0.5 rounded ml-2 font-bold flex items-center ${pColor}"><i class="fa-solid fa-chart-line text-[10px] mr-1"></i>${msg.ai_priority_score}/10</span>`;
+            }
 
             let avatarHtml = msg.sender_avatar_url 
                 ? `<img src="${msg.sender_avatar_url}" class="w-8 h-8 rounded-full object-cover">`
@@ -165,17 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="${iconClass} ${iconColor} text-[14px] mr-2 mt-2"></i>
                     ${avatarHtml}
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 overflow-hidden">
                     <div class="flex items-baseline space-x-2">
                         <span class="font-bold text-green-400">${msg.sender_name}</span>
-                        <span class="text-[10px] uppercase bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">${msg.platform_custom_name || msg.platform}</span>
-                        ${msg.platform === 'DISCORD' && msg.channel_name && msg.channel_name !== 'unknown' ? `<span class="text-[10px] uppercase bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">#${msg.channel_name}</span>` : ''}
-                        <span class="text-xs text-gray-400">${timeString}</span>
+                        <span class="text-[10px] uppercase bg-gray-800 px-1.5 py-0.5 rounded text-gray-400 truncate max-w-[100px]">${msg.platform_custom_name || msg.platform}</span>
+                        ${msg.platform === 'DISCORD' && msg.channel_name && msg.channel_name !== 'unknown' ? `<span class="text-[10px] uppercase bg-gray-800 px-1.5 py-0.5 rounded text-gray-400 truncate max-w-[100px]">#${msg.channel_name}</span>` : ''}
+                        <span class="text-xs text-gray-400 whitespace-nowrap">${timeString}</span>
+                        ${priorityBadge}
                     </div>
                     <div class="text-gray-300 text-sm mt-1 leading-relaxed">
                         ${msg.content}
                     </div>
-                    ${msg.ai_summary ? `<div class="text-amber-400 text-sm mt-1 flex items-start"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" class="mr-1.5 mt-0.5 flex-shrink-0"><path d="M11.5 0C11.5 6.5 6.5 11.5 0 11.5C6.5 11.5 11.5 16.5 11.5 23C11.5 16.5 16.5 11.5 23 11.5C16.5 11.5 11.5 6.5 11.5 0Z" /></svg> <span>(${msg.ai_priority_score}) ${msg.ai_summary}</span></div>` : ''}
+                    ${msg.ai_summary ? `<div class="text-amber-400 text-sm mt-1 flex items-start"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" class="mr-1.5 mt-0.5 flex-shrink-0"><path d="M11.5 0C11.5 6.5 6.5 11.5 0 11.5C6.5 11.5 11.5 16.5 11.5 23C11.5 16.5 16.5 11.5 23 11.5C16.5 11.5 11.5 6.5 11.5 0Z" /></svg> <span>${msg.ai_summary}</span></div>` : ''}
                 </div>
             `;
 
@@ -218,23 +230,45 @@ document.addEventListener('DOMContentLoaded', () => {
         replyInput.focus();
 
         const platform = msgElement.dataset.platform;
+        const pCustomName = msgElement.dataset.platformCustomName || platform;
+        const channelName = msgElement.dataset.channelName;
+        const avatarUrl = msgElement.dataset.avatarUrl;
+        const content = msgElement.dataset.content;
+        const timeString = msgElement.dataset.timeString;
+
         let pColor = 'text-gray-400';
-        if (platform === 'INSTAGRAM' || platform === 'FACEBOOK') pColor = 'text-pink-500';
-        if (platform === 'YOUTUBE') pColor = 'text-red-500';
-        if (platform === 'DISCORD') pColor = 'text-[#5865F2]';
-        if (platform === 'TIKTOK') pColor = 'text-white';
+        let iconClass = 'fa-plug';
+        if (platform === 'INSTAGRAM' || platform === 'FACEBOOK') { pColor = 'text-pink-500'; iconClass = 'fa-instagram fa-brands'; }
+        if (platform === 'YOUTUBE') { pColor = 'text-red-500'; iconClass = 'fa-youtube fa-brands'; }
+        if (platform === 'DISCORD') { pColor = 'text-[#5865F2]'; iconClass = 'fa-discord fa-brands'; }
+        if (platform === 'TIKTOK') { pColor = 'text-white'; iconClass = 'fa-tiktok fa-brands'; }
+
+        let platformDisplay = `<i class="${iconClass} ${pColor} mr-1"></i> ${pCustomName}`;
+        if (platform === 'DISCORD' && channelName && channelName !== 'unknown') {
+            platformDisplay += ` <span class="text-gray-500 mx-1">•</span> #${channelName}`;
+        }
+
+        let avatarHtml = avatarUrl 
+            ? `<img src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover">`
+            : `<div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user text-xl"></i></div>`;
 
         if (aiContextPanel) {
             aiContextPanel.innerHTML = `
                 <div class="h-full flex flex-col">
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-user text-xl"></i>
-                        </div>
+                        ${avatarHtml}
                         <div>
                             <div class="font-bold text-lg text-white">${msgElement.dataset.sender}</div>
-                            <div class="text-xs font-bold uppercase ${pColor}">${platform}</div>
+                            <div class="text-xs font-bold uppercase text-gray-400 flex items-center">${platformDisplay}</div>
                         </div>
+                    </div>
+
+                    <div class="bg-[#1E1F22] rounded p-4 mb-4 border border-gray-800">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-xs font-bold text-gray-500 uppercase"><i class="fa-solid fa-quote-left mr-1"></i> Original Message</div>
+                            <div class="text-xs text-gray-500">${timeString}</div>
+                        </div>
+                        <div class="text-sm text-gray-300 italic border-l-2 border-gray-600 pl-3 py-1 leading-relaxed">"${content}"</div>
                     </div>
 
                     <div class="bg-[#1E1F22] rounded p-4 mb-4 border border-gray-800">

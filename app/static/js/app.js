@@ -482,26 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     // --- 6. SETTINGS & PROFILE ---
-    const settingsGear = document.getElementById('settings-gear');
-    const settingsPopover = document.getElementById('settings-popover');
     const openSettingsBtn = document.getElementById('open-settings-btn');
     const signOutBtn = document.getElementById('sign-out-btn');
     
-    // Toggle popover
-    if (settingsGear) {
-        settingsGear.addEventListener('click', (e) => {
-            e.stopPropagation();
-            settingsPopover.classList.toggle('hidden');
-        });
-    }
-
-    // Hide popover when clicking outside
-    document.addEventListener('click', (e) => {
-        if (settingsPopover && !settingsPopover.contains(e.target) && e.target !== settingsGear) {
-            settingsPopover.classList.add('hidden');
-        }
-    });
-
     // Sign out
     if (signOutBtn) {
         signOutBtn.addEventListener('click', async () => {
@@ -520,7 +503,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (openSettingsBtn) {
         openSettingsBtn.addEventListener('click', () => {
-            settingsPopover.classList.add('hidden');
             settingsModal.classList.remove('hidden');
             // reset to account tab by default
             document.querySelector('.settings-tab-btn[data-tab="account"]').click();

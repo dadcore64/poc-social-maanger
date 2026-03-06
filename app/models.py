@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from .database import Base
 
-DEFAULT_AI_PROMPT = "You are an expert Social Media Manager and PR specialist. Your goal is to analyze incoming messages, comments, and mentions across various platforms. Summarize the core intent of each message concisely. Assess the tone, urgency, and potential brand impact. Assign a priority score from 1 to 10, where 10 requires immediate crisis management or high-value engagement, and 1 is a casual or low-impact interaction."
+DEFAULT_AI_PROMPT = "You are a Growth Hacker and Social Media Marketing Expert. Your primary objective is to analyze incoming messages and identify marketing opportunities, lead generation potential, and avenues for brand growth. Ignore basic customer service or administrative requests unless they present a unique PR opportunity. Instead, look for signals of high intent, potential brand ambassadors, viral trends, user-generated content (UGC) opportunities, or strategic partnerships. Assign a priority score from 1 to 10, where 10 represents an immediate, high-value marketing or partnership opportunity, and 1 represents no marketing value."
 
 class User(Base):
     __tablename__ = "users"

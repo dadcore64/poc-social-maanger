@@ -156,11 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
             msgDiv.dataset.sender = msg.sender_name;
             msgDiv.dataset.platform = msg.platform;
 
-            let priorityBadge = '';
-            if (msg.ai_priority_score) {
-                priorityBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded ml-2 font-bold flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" class="mr-1"><path d="M11.5 0C11.5 6.5 6.5 11.5 0 11.5C6.5 11.5 11.5 16.5 11.5 23C11.5 16.5 16.5 11.5 23 11.5C16.5 11.5 11.5 6.5 11.5 0Z" /></svg>${msg.ai_priority_score}</span>`;
-            }
-
             let avatarHtml = msg.sender_avatar_url 
                 ? `<img src="${msg.sender_avatar_url}" class="w-8 h-8 rounded-full object-cover">`
                 : `<div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center"><i class="fa-solid fa-user text-gray-300 text-xs"></i></div>`;
@@ -176,12 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="text-[10px] uppercase bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">${msg.platform_custom_name || msg.platform}</span>
                         ${msg.platform === 'DISCORD' && msg.channel_name && msg.channel_name !== 'unknown' ? `<span class="text-[10px] uppercase bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">#${msg.channel_name}</span>` : ''}
                         <span class="text-xs text-gray-400">${timeString}</span>
-                        ${priorityBadge}
                     </div>
                     <div class="text-gray-300 text-sm mt-1 leading-relaxed">
                         ${msg.content}
                     </div>
-                    ${msg.ai_summary ? `<div class="text-emerald-400 text-xs mt-1"><i class="fa-solid fa-robot mr-1"></i> ${msg.ai_summary}</div>` : ''}
+                    ${msg.ai_summary ? `<div class="text-amber-400 text-sm mt-1 flex items-start"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" class="mr-1.5 mt-0.5 flex-shrink-0"><path d="M11.5 0C11.5 6.5 6.5 11.5 0 11.5C6.5 11.5 11.5 16.5 11.5 23C11.5 16.5 16.5 11.5 23 11.5C16.5 11.5 11.5 6.5 11.5 0Z" /></svg> <span>(${msg.ai_priority_score}) ${msg.ai_summary}</span></div>` : ''}
                 </div>
             `;
 
@@ -244,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
                     <div class="bg-[#1E1F22] rounded p-4 mb-4 border border-gray-800">
-                        <div class="text-xs font-bold text-gray-500 uppercase mb-2"><i class="fa-solid fa-robot mr-1"></i> AI Summary</div>
+                        <div class="text-xs font-bold text-amber-400 uppercase mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" class="mr-1"><path d="M11.5 0C11.5 6.5 6.5 11.5 0 11.5C6.5 11.5 11.5 16.5 11.5 23C11.5 16.5 16.5 11.5 23 11.5C16.5 11.5 11.5 6.5 11.5 0Z" /></svg> AI Summary</div>
                         <div class="text-sm text-gray-300 leading-relaxed">${msgElement.dataset.summary}</div>
                     </div>
 
@@ -431,7 +425,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Summarized ${result.processed_count} messages`);
                     // Update AI Banner text to show overall insights or success state
                     if (aiBannerText) {
-                        aiBannerText.textContent = `Insights generated! Processed ${result.processed_count} new messages. Review priority scores below.`;
+                        if (result.overall_summary) {
+                            aiBannerText.textContent = result.overall_summary;
+                        } else {
+                            aiBannerText.textContent = `Insights generated! Processed ${result.processed_count} new messages.`;
+                        }
                     }
                     fetchMessages();
                 }
